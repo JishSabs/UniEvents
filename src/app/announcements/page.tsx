@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -18,7 +18,7 @@ import { Plus, Filter, Loader2, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 
-export default function AnnouncementsPage() {
+function AnnouncementsContent() {
   const { user, isModerator } = useAuth();
   const searchParams = useSearchParams();
 
@@ -209,5 +209,17 @@ export default function AnnouncementsPage() {
         />
       )}
     </div>
+  );
+  
+}
+export default function AnnouncementsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={32} className="animate-spin text-[#0f2d6b]" />
+      </div>
+    }>
+      <AnnouncementsContent />
+    </Suspense>
   );
 }

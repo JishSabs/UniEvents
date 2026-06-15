@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getActiveListings, deleteListing } from "@/lib/marketplace";
@@ -18,7 +18,7 @@ const TYPE_ICONS = {
   gig: Star,
 };
 
-export default function MarketplacePage() {
+function MarketplaceContent() {
   const { user, profile, isAdmin } = useAuth();
   const searchParams = useSearchParams();
 
@@ -171,5 +171,17 @@ export default function MarketplacePage() {
         />
       )}
     </div>
+  );
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={32} className="animate-spin text-[#0d9488]" />
+      </div>
+    }>
+      <MarketplaceContent />
+    </Suspense>
   );
 }
