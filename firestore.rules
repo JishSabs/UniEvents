@@ -1,0 +1,80 @@
+// ============================================================
+// Firestore Security Rules
+// Paste these into Firebase Console → Firestore → Rules
+// ============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && getUserData().role == 'admin';
+    }
+    
+    function isModerator() {
+      return isSignedIn() && (getUserData().role == 'moderator' || getUserData().role == 'admin');
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isActiveUser() {
+      return isSignedIn() && getUserData().isActive == true;
+    }
+
+    // ─── Users ───────────────────────────────────────────────
+    match /users/{userId} {
+      // Anyone signed in can read user profiles
+      allow read: if isSignedIn();
+      // Users can create their own profile on registration
+      allow create: if isOwner(userId);
+      // Users can update their own profile; admins can update anyone's
+      allow update: if isOwner(userId) || isAdmin();
+      // Only admins can delete users
+      allow delete: if isAdmin();
+    }
+
+    // ─── Announcements ────────────────────────────────────────
+    match /announcements/{announcementId} {
+      // Anyone can read approved announcements; moderators see all
+      allow read: if resource.data.status == 'approved' || isModerator();
+      // Active signed-in users can create announcements
+      allow create: if isActiveUser();
+      // Authors can update their own pending posts; moderators can update any
+      allow update: if isOwner(resource.data.authorId) 
+                    && resource.data.status == 'pending'
+                    || isModerator();
+      // Only moderators/admins can delete
+      allow delete: if isModerator();
+    }
+
+    // ─── Marketplace ─────────────────────────────────────────
+    match /marketplace/{listingId} {
+      // Anyone can read active listings
+      allow read: if resource.data.status == 'active' || isOwner(resource.data.authorId) || isModerator();
+      // Active users can create listings
+      allow create: if isActiveUser();
+      // Authors can update/delete their own listings; admins can do anything
+      allow update: if isOwner(resource.data.authorId) || isAdmin();
+      allow delete: if isOwner(resource.data.authorId) || isAdmin();
+    }
+
+    // ─── Notifications ────────────────────────────────────────
+    match /notifications/{notificationId} {
+      allow read: if isOwner(resource.data.userId);
+      allow create: if isModerator();
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId);
+    }
+  }
+}
