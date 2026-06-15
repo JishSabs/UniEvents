@@ -25,12 +25,9 @@ export async function createAnnouncement(
   data: Omit<Announcement, "id" | "createdAt" | "updatedAt" | "viewCount" | "status" | "isPinned">
   & { authorRole: UserRole }
 ): Promise<string> {
-  // Students need approval; admins/moderators are auto-approved
-  const isOfficial = data.source === "official";
-  const status: PostStatus =
-    data.authorRole === "admin" || data.authorRole === "moderator"
-      ? "approved"
-      : "pending";
+  // All posts (official and student) go live immediately.
+  // Admins/moderators can remove inappropriate posts via deleteAnnouncement.
+  const status: PostStatus = "approved";
 
   const docRef = await addDoc(collection(db, COL), {
     ...data,
