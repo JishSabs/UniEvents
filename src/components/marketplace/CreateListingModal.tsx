@@ -116,7 +116,7 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
                 <button
                   key={t.value}
                   type="button"
-                  onClick={() => setForm({ ...form, type: t.value })}
+                  onClick={() => setForm({ ...form, type: t.value as ListingType })}
                   className={`py-2 px-3 rounded-xl border-2 text-xs font-medium transition-all ${
                     form.type === t.value
                       ? "border-[#0d9488] bg-[#0d9488] text-white"
@@ -179,7 +179,7 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Price Type</label>
               <select
                 value={form.priceType}
-                onChange={(e) => setForm({ ...form, priceType: e.target.value })}
+                onChange={(e) => setForm({ ...form, priceType: e.target.value as PriceType })}
                 className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 bg-white"
               >
                 <option value="fixed">Fixed</option>
