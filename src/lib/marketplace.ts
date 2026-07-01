@@ -36,24 +36,40 @@ export async function getActiveListings(
   filterCategory?: string,
   pageSize = 20
 ): Promise<MarketplaceListing[]> {
+  const effectivePageSize = filterType || filterCategory ? Math.max(pageSize, 100) : pageSize;
   const constraints: Parameters<typeof query>[1][] = [
     where("status", "==", "active"),
-    orderBy("createdAt", "desc"),
-    limit(pageSize),
+    limit(effectivePageSize),
   ];
 
-  if (filterType) constraints.splice(1, 0, where("type", "==", filterType));
-  if (filterCategory) constraints.splice(1, 0, where("category", "==", filterCategory));
-
   const snap = await getDocs(query(collection(db, COL), ...constraints));
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MarketplaceListing));
+  let listings = snap.docs.map((d) => ({ id: d.id, ...d.data() } as MarketplaceListing));
+
+  listings.sort((a, b) => {
+    const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+    const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+    return bTime - aTime;
+  });
+
+  if (filterType) {
+    listings = listings.filter((listing) => listing.type === filterType);
+  }
+  if (filterCategory) {
+    listings = listings.filter((listing) => listing.category === filterCategory);
+  }
+
+  return listings;
 }
 
 export async function getUserListings(userId: string): Promise<MarketplaceListing[]> {
-  const snap = await getDocs(
-    query(collection(db, COL), where("authorId", "==", userId), orderBy("createdAt", "desc"))
-  );
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MarketplaceListing));
+  const snap = await getDocs(query(collection(db, COL), where("authorId", "==", userId)));
+  const listings = snap.docs.map((d) => ({ id: d.id, ...d.data() } as MarketplaceListing));
+
+  return listings.sort((a, b) => {
+    const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+    const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+    return bTime - aTime;
+  });
 }
 
 // ─── Update / Delete ──────────────────────────────────────────────────────────

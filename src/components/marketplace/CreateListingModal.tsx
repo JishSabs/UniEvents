@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { createListing } from "@/lib/marketplace";
 import { MARKETPLACE_CATEGORIES, LISTING_TYPES } from "@/lib/utils";
+import { ListingType, PriceType } from "@/types";
 import { X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -12,10 +13,25 @@ interface CreateListingModalProps {
   onCreated: () => void;
 }
 
+interface ListingFormState {
+  type: ListingType;
+  title: string;
+  description: string;
+  price: string;
+  priceType: PriceType;
+  currency: string;
+  category: string;
+  location: string;
+  tags: string;
+  whatsapp: string;
+  email: string;
+  phone: string;
+}
+
 export default function CreateListingModal({ onClose, onCreated }: CreateListingModalProps) {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ListingFormState>({
     type: "product",
     title: "",
     description: "",
@@ -69,7 +85,8 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
       onClose();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to post listing. Please try again.");
+      const message = err instanceof Error ? err.message : "Please try again.";
+      toast.error(`Failed to post listing. ${message}`);
     } finally {
       setLoading(false);
     }

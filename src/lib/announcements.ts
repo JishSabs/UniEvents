@@ -48,19 +48,29 @@ export async function getApprovedAnnouncements(
   pageSize = 20,
   lastDoc?: DocumentSnapshot
 ): Promise<Announcement[]> {
+  const effectivePageSize = filterSource || filterCategory ? Math.max(pageSize, 100) : pageSize;
+
   const constraints: Parameters<typeof query>[1][] = [
     where("status", "==", "approved"),
     orderBy("isPinned", "desc"),
     orderBy("createdAt", "desc"),
-    limit(pageSize),
+    limit(effectivePageSize),
   ];
 
-  if (filterSource) constraints.splice(1, 0, where("source", "==", filterSource));
-  if (filterCategory) constraints.splice(1, 0, where("category", "==", filterCategory));
   if (lastDoc) constraints.push(startAfter(lastDoc));
 
   const snap = await getDocs(query(collection(db, COL), ...constraints));
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Announcement));
+  let announcements = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Announcement));
+
+  if (filterSource || filterCategory) {
+    announcements = announcements.filter((announcement) => {
+      if (filterSource && announcement.source !== filterSource) return false;
+      if (filterCategory && announcement.category !== filterCategory) return false;
+      return true;
+    });
+  }
+
+  return announcements;
 }
 
 export async function getPendingAnnouncements(): Promise<Announcement[]> {
