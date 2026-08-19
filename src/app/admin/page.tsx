@@ -3,8 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { getPendingAnnouncements, approveAnnouncement, rejectAnnouncement, deleteAnnouncement } from "@/lib/announcements";
-import { getAllUsers, updateUserRole, toggleUserActive } from "@/lib/users";
+import {
+  getPendingAnnouncements,
+  approveAnnouncement,
+  rejectAnnouncement,
+  deleteAnnouncement,
+  getApprovedAnnouncementCount,
+} from "@/lib/announcements";
+import { getAllUsers, updateUserRole, toggleUserActive, getAllUsersCount } from "@/lib/users";
+import { getActiveListingCount } from "@/lib/marketplace";
 import { Announcement, UserProfile, UserRole } from "@/types";
 import AnnouncementCard from "@/components/announcements/AnnouncementCard";
 import { cn, timeAgo } from "@/lib/utils";
@@ -20,6 +27,7 @@ import {
   UserCog,
   ToggleLeft,
   ToggleRight,
+  ShoppingBag,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -32,24 +40,49 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("overview");
   const [pending, setPending] = useState<Announcement[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [pendingCount, setPendingCount] = useState<number>(0);
+  const [totalUserCount, setTotalUserCount] = useState<number>(0);
+  const [activeListingCount, setActiveListingCount] = useState<number>(0);
+  const [approvedAnnouncementCount, setApprovedAnnouncementCount] = useState<number>(0);
   const [loadingPending, setLoadingPending] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
   useEffect(() => {
-    if (!user || !isModerator) {
-      router.push("/");
-    }
-  }, [user, isModerator, router]);
+    const loadOverview = async () => {
+      setLoadingPending(true);
+      setLoadingUsers(true);
+      try {
+        const [pendingResult, totalUsers, approvedAnnouncements, activeListings] = await Promise.all([
+          getPendingAnnouncements(),
+          getAllUsersCount(),
+          getApprovedAnnouncementCount(),
+          getActiveListingCount(),
+        ]);
+
+        setPendingCount(pendingResult.length);
+        setTotalUserCount(totalUsers);
+        setApprovedAnnouncementCount(approvedAnnouncements);
+        setActiveListingCount(activeListings);
+      } finally {
+        setLoadingPending(false);
+        setLoadingUsers(false);
+      }
+    };
+
+    loadOverview();
+  }, [isAdmin]);
 
   useEffect(() => {
     if (tab === "pending") loadPending();
     if (tab === "users" && isAdmin) loadUsers();
-  }, [tab]);
+  }, [tab, isAdmin]);
 
   const loadPending = async () => {
     setLoadingPending(true);
     try {
-      setPending(await getPendingAnnouncements());
+      const pendingAnnouncements = await getPendingAnnouncements();
+      setPending(pendingAnnouncements);
+      setPendingCount(pendingAnnouncements.length);
     } finally {
       setLoadingPending(false);
     }
@@ -109,7 +142,7 @@ export default function AdminPage() {
 
   const TABS = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "pending", label: "Pending Posts", icon: Clock, badge: pending.length || undefined },
+    { id: "pending", label: "Pending Posts", icon: Clock, badge: pendingCount || undefined },
     ...(isAdmin ? [{ id: "users", label: "User Management", icon: Users }] : []),
   ] as { id: Tab; label: string; icon: typeof LayoutDashboard; badge?: number }[];
 
@@ -159,9 +192,10 @@ export default function AdminPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[
-              { label: "Pending Review", value: "—", icon: Clock, color: "text-amber-500 bg-amber-50", action: () => setTab("pending") },
-              { label: "Total Users", value: "—", icon: Users, color: "text-blue-500 bg-blue-50", action: isAdmin ? () => setTab("users") : undefined },
-              { label: "Your Role", value: profile?.role ?? "—", icon: Shield, color: "text-purple-500 bg-purple-50" },
+              { label: "Pending Review", value: pendingCount, icon: Clock, color: "text-amber-500 bg-amber-50", action: () => setTab("pending") },
+              { label: "Total Users", value: totalUserCount, icon: Users, color: "text-blue-500 bg-blue-50", action: isAdmin ? () => setTab("users") : undefined },
+              { label: "Active Listings", value: activeListingCount, icon: ShoppingBag, color: "text-teal-500 bg-teal-50" },
+              { label: "Approved Announcements", value: approvedAnnouncementCount, icon: Shield, color: "text-purple-500 bg-purple-50" },
             ].map(({ label, value, icon: Icon, color, action }) => (
               <button
                 key={label}

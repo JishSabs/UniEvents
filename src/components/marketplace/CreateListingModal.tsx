@@ -5,8 +5,10 @@ import { useAuth } from "@/context/AuthContext";
 import { createListing } from "@/lib/marketplace";
 import { MARKETPLACE_CATEGORIES, LISTING_TYPES } from "@/lib/utils";
 import { ListingType, PriceType } from "@/types";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, ImagePlus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface CreateListingModalProps {
   onClose: () => void;
@@ -28,9 +30,15 @@ interface ListingFormState {
   phone: string;
 }
 
+const MAX_IMAGES = 4;
+const MAX_FILE_SIZE_MB = 5;
+
 export default function CreateListingModal({ onClose, onCreated }: CreateListingModalProps) {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [form, setForm] = useState<ListingFormState>({
     type: "product",
     title: "",
@@ -46,6 +54,60 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
     phone: "",
   });
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+
+    const remainingSlots = MAX_IMAGES - imageFiles.length;
+    if (remainingSlots <= 0) {
+      toast.error(`You can only add up to ${MAX_IMAGES} photos`);
+      e.target.value = "";
+      return;
+    }
+
+    const validFiles: File[] = [];
+    for (const file of files.slice(0, remainingSlots)) {
+      if (!file.type.startsWith("image/")) {
+        toast.error(`${file.name} isn't an image`);
+        continue;
+      }
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        toast.error(`${file.name} is over ${MAX_FILE_SIZE_MB}MB`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) {
+      e.target.value = "";
+      return;
+    }
+
+    setImageFiles((prev) => [...prev, ...validFiles]);
+    setImagePreviews((prev) => [...prev, ...validFiles.map((f) => URL.createObjectURL(f))]);
+    e.target.value = "";
+  };
+
+  const removeImage = (index: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => {
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const uploadImages = async (userId: string): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const file of imageFiles) {
+      const path = `marketplace/${userId}/${Date.now()}-${file.name}`;
+      const storageRef = ref(storage, path);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      urls.push(url);
+    }
+    return urls;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
@@ -60,6 +122,13 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
 
     setLoading(true);
     try {
+      let imageURLs: string[] = [];
+      if (imageFiles.length > 0) {
+        setUploadingImages(true);
+        imageURLs = await uploadImages(profile.uid);
+        setUploadingImages(false);
+      }
+
       await createListing({
         type: form.type as never,
         title: form.title.trim(),
@@ -67,7 +136,7 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
         price: form.price ? parseFloat(form.price) : undefined,
         priceType: form.priceType as never,
         currency: form.currency,
-        imageURLs: [],
+        imageURLs,
         category: form.category,
         tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
         location: form.location || undefined,
@@ -89,6 +158,7 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
       toast.error(`Failed to post listing. ${message}`);
     } finally {
       setLoading(false);
+      setUploadingImages(false);
     }
   };
 
@@ -126,6 +196,42 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
                   {t.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Photos */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Photos <span className="text-slate-400 font-normal">(up to {MAX_IMAGES})</span>
+            </label>
+            <div className="flex flex-wrap gap-3">
+              {imagePreviews.map((src, index) => (
+                <div key={src} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <Trash2 size={16} className="text-white" />
+                  </button>
+                </div>
+              ))}
+
+              {imageFiles.length < MAX_IMAGES && (
+                <label className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-teal-400 hover:text-teal-500 cursor-pointer transition-colors">
+                  <ImagePlus size={18} />
+                  <span className="text-[10px] font-medium">Add</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
           </div>
 
@@ -288,7 +394,11 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
               className="flex-1 py-2.5 bg-[#0d9488] text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 size={15} className="animate-spin" />}
-              {loading ? "Posting..." : "Post Listing"}
+              {loading
+                ? uploadingImages
+                  ? "Uploading photos..."
+                  : "Posting..."
+                : "Post Listing"}
             </button>
           </div>
         </form>

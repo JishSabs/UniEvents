@@ -6,6 +6,7 @@ import {
   query,
   orderBy,
   serverTimestamp,
+  getCountFromServer,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { UserProfile, UserRole } from "@/types";
@@ -15,6 +16,11 @@ const COL = "users";
 export async function getAllUsers(): Promise<UserProfile[]> {
   const snap = await getDocs(query(collection(db, COL), orderBy("createdAt", "desc")));
   return snap.docs.map((d) => d.data() as UserProfile);
+}
+
+export async function getAllUsersCount(): Promise<number> {
+  const snap = await getCountFromServer(query(collection(db, COL)));
+  return snap.data().count;
 }
 
 export async function updateUserRole(uid: string, role: UserRole): Promise<void> {

@@ -12,6 +12,7 @@ import {
   increment,
   limit,
   startAfter,
+  getCountFromServer,
   DocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -25,9 +26,7 @@ export async function createAnnouncement(
   data: Omit<Announcement, "id" | "createdAt" | "updatedAt" | "viewCount" | "status" | "isPinned">
   & { authorRole: UserRole }
 ): Promise<string> {
-  // All posts (official and student) go live immediately.
-  // Admins/moderators can remove inappropriate posts via deleteAnnouncement.
-  const status: PostStatus = "approved";
+  const status: PostStatus = data.authorRole === "student" ? "pending" : "approved";
 
   const docRef = await addDoc(collection(db, COL), {
     ...data,
@@ -52,25 +51,21 @@ export async function getApprovedAnnouncements(
 
   const constraints: Parameters<typeof query>[1][] = [
     where("status", "==", "approved"),
-    orderBy("isPinned", "desc"),
-    orderBy("createdAt", "desc"),
-    limit(effectivePageSize),
   ];
+
+  if (filterSource) {
+    constraints.push(where("source", "==", filterSource));
+  }
+  if (filterCategory) {
+    constraints.push(where("category", "==", filterCategory));
+  }
+
+  constraints.push(orderBy("isPinned", "desc"), orderBy("createdAt", "desc"), limit(effectivePageSize));
 
   if (lastDoc) constraints.push(startAfter(lastDoc));
 
   const snap = await getDocs(query(collection(db, COL), ...constraints));
-  let announcements = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Announcement));
-
-  if (filterSource || filterCategory) {
-    announcements = announcements.filter((announcement) => {
-      if (filterSource && announcement.source !== filterSource) return false;
-      if (filterCategory && announcement.category !== filterCategory) return false;
-      return true;
-    });
-  }
-
-  return announcements;
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Announcement));
 }
 
 export async function getPendingAnnouncements(): Promise<Announcement[]> {
@@ -78,6 +73,11 @@ export async function getPendingAnnouncements(): Promise<Announcement[]> {
     query(collection(db, COL), where("status", "==", "pending"), orderBy("createdAt", "asc"))
   );
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Announcement));
+}
+
+export async function getApprovedAnnouncementCount(): Promise<number> {
+  const snap = await getCountFromServer(query(collection(db, COL), where("status", "==", "approved")));
+  return snap.data().count;
 }
 
 export async function getUserAnnouncements(userId: string): Promise<Announcement[]> {

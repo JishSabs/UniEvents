@@ -9,6 +9,7 @@ import {
   orderBy,
   serverTimestamp,
   limit,
+  getCountFromServer,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { MarketplaceListing, ListingType, ListingStatus } from "@/types";
@@ -39,26 +40,19 @@ export async function getActiveListings(
   const effectivePageSize = filterType || filterCategory ? Math.max(pageSize, 100) : pageSize;
   const constraints: Parameters<typeof query>[1][] = [
     where("status", "==", "active"),
-    limit(effectivePageSize),
   ];
 
-  const snap = await getDocs(query(collection(db, COL), ...constraints));
-  let listings = snap.docs.map((d) => ({ id: d.id, ...d.data() } as MarketplaceListing));
-
-  listings.sort((a, b) => {
-    const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-    const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-    return bTime - aTime;
-  });
-
   if (filterType) {
-    listings = listings.filter((listing) => listing.type === filterType);
+    constraints.push(where("type", "==", filterType));
   }
   if (filterCategory) {
-    listings = listings.filter((listing) => listing.category === filterCategory);
+    constraints.push(where("category", "==", filterCategory));
   }
 
-  return listings;
+  constraints.push(orderBy("createdAt", "desc"), limit(effectivePageSize));
+
+  const snap = await getDocs(query(collection(db, COL), ...constraints));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MarketplaceListing));
 }
 
 export async function getUserListings(userId: string): Promise<MarketplaceListing[]> {
@@ -70,6 +64,11 @@ export async function getUserListings(userId: string): Promise<MarketplaceListin
     const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
     return bTime - aTime;
   });
+}
+
+export async function getActiveListingCount(): Promise<number> {
+  const snap = await getCountFromServer(query(collection(db, COL), where("status", "==", "active")));
+  return snap.data().count;
 }
 
 // ─── Update / Delete ──────────────────────────────────────────────────────────

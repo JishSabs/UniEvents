@@ -26,6 +26,10 @@ export default function LoginPage() {
       const msg = err instanceof Error ? err.message : "Sign in failed";
       if (msg.includes("user-not-found") || msg.includes("wrong-password") || msg.includes("invalid-credential")) {
         toast.error("Invalid email or password");
+      } else if (msg.includes("account-disabled")) {
+        toast.error("Your account is inactive. Please contact support.");
+      } else if (msg.includes("No user profile found")) {
+        toast.error("Account profile missing. Please contact support.");
       } else {
         toast.error("Sign in failed. Please try again.");
       }

@@ -40,6 +40,8 @@ export default function RegisterPage() {
       const msg = err instanceof Error ? err.message : "";
       if (msg.includes("email-already-in-use")) {
         toast.error("That email is already registered. Try signing in.");
+      } else if (msg.includes("invalid-email-domain")) {
+        toast.error("Please register with your university email address.");
       } else {
         toast.error("Registration failed. Please try again.");
       }

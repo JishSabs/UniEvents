@@ -72,7 +72,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!auth) {
       throw new Error("Firebase is not initialized. Check your environment configuration.");
     }
-    await signInWithEmailAndPassword(auth, email, password);
+
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const profileDoc = await getDoc(doc(db, "users", cred.user.uid));
+
+    if (!profileDoc.exists()) {
+      await signOut(auth);
+      throw new Error("No user profile found. Please contact support.");
+    }
+
+    const profileData = profileDoc.data() as UserProfile;
+    if (!profileData.isActive) {
+      await signOut(auth);
+      throw new Error("account-disabled");
+    }
+
+    setUser(cred.user);
+    setProfile(profileData);
   };
 
   const signUp = async (
@@ -81,6 +97,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     displayName: string,
     studentId: string
   ) => {
+    const allowedDomain = process.env.NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN;
+    if (
+      allowedDomain &&
+      !email.toLowerCase().endsWith(`@${allowedDomain.toLowerCase()}`)
+    ) {
+      throw new Error("invalid-email-domain");
+    }
+
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName });
 

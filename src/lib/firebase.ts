@@ -4,13 +4,23 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCVi6zMcR_GsVGauZHO7pLcT-ghlcY8NF4",
-  authDomain: "unievents-ea563.firebaseapp.com",
-  projectId: "unievents-ea563",
-  storageBucket: "unievents-ea563.firebasestorage.app",
-  messagingSenderId: "795627505777",
-  appId: "1:795627505777:web:8dbe8ad2c03dd71210b3d0",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
+
+if (
+  !firebaseConfig.apiKey ||
+  !firebaseConfig.authDomain ||
+  !firebaseConfig.projectId ||
+  !firebaseConfig.storageBucket ||
+  !firebaseConfig.appId
+) {
+  throw new Error("Missing Firebase environment variables. Ensure .env.local is configured.");
+}
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
