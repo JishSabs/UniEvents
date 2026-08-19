@@ -78,11 +78,24 @@ service cloud.firestore {
     }
 
     match /transactions/{transactionId} {
-  allow create: if request.auth != null && request.auth.uid == request.resource.data.buyerId;
-  allow read: if request.auth != null &&
-    (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
-  allow update: if request.auth != null &&
-    (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
-}
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.buyerId;
+      allow read: if request.auth != null &&
+        (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
+      allow update: if request.auth != null &&
+        (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
+
+      // Messages subcollection: only buyer or seller may read/create messages
+      match /messages/{messageId} {
+        allow read: if request.auth != null && (
+          request.auth.uid == get(/databases/$(database)/documents/transactions/$(transactionId)).data.buyerId ||
+          request.auth.uid == get(/databases/$(database)/documents/transactions/$(transactionId)).data.sellerId
+        );
+
+        allow create: if request.auth != null && (
+          request.auth.uid == get(/databases/$(database)/documents/transactions/$(transactionId)).data.buyerId ||
+          request.auth.uid == get(/databases/$(database)/documents/transactions/$(transactionId)).data.sellerId
+        ) && request.auth.uid == request.resource.data.senderId;
+      }
+    }
   }
 }

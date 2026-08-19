@@ -77,6 +77,32 @@ NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN=university.ac.zw
 Copy the contents of `firestore.rules` and paste into:
 Firebase Console → Firestore Database → Rules → Publish
 
+Alternatively you can deploy rules with the Firebase CLI (recommended for repeatable deployments):
+
+```bash
+# install the Firebase CLI (if you don't have it)
+npm install -g firebase-tools
+
+# login and select your project
+firebase login
+firebase use --add
+
+# deploy only Firestore rules
+firebase deploy --only firestore:rules
+
+# or deploy rules + indexes
+firebase deploy --only firestore:rules,firestore:indexes
+```
+
+You can also test rules locally using the Firestore emulator before deploying:
+
+```bash
+# start the emulator
+firebase emulators:start --only firestore
+
+# run your app locally pointing to the emulator (set FIRESTORE_EMULATOR_HOST env if needed)
+```
+
 ### 5. Set up Firestore Indexes
 
 Either:

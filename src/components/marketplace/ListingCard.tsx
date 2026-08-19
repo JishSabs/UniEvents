@@ -1,4 +1,5 @@
 "use client";
+import { auth } from "@/lib/firebase";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { startTransaction } from "@/lib/transactions";
@@ -43,24 +44,53 @@ const [starting, setStarting] = useState(false);
 const isOwner = currentUserId === listing.authorId;
 
 const handleStartTransaction = async () => {
-  if (!currentUserId || !currentUserName) {
+  const firebaseUser = auth.currentUser;
+
+  console.log("Firebase Auth UID:", firebaseUser?.uid);
+  console.log("Prop currentUserId:", currentUserId);
+  console.log("Seller ID:", listing.authorId);
+
+  if (!firebaseUser) {
     toast.error("Please log in to start a transaction");
     return;
   }
+
+  if (!currentUserName) {
+    toast.error("User information is missing");
+    return;
+  }
+
+  // Prevent buying your own listing
+  if (firebaseUser.uid === listing.authorId) {
+    toast.error("You cannot start a transaction on your own listing");
+    return;
+  }
+
   setStarting(true);
+
   try {
     const id = await startTransaction({
       listingId: listing.id,
       listingTitle: listing.title,
-      buyerId: currentUserId,
+
+      // IMPORTANT: Use Firebase Auth UID directly
+      buyerId: firebaseUser.uid,
+
       buyerName: currentUserName,
+
       sellerId: listing.authorId,
       sellerName: listing.authorName,
     });
+
+    console.log("Transaction created:", id);
+
     router.push(`/transactions/${id}`);
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to start transaction");
+  } catch (err: any) {
+    console.error("TRANSACTION ERROR:", err);
+    console.error("Firebase error code:", err?.code);
+    console.error("Firebase error message:", err?.message);
+
+    toast.error(err?.message || "Failed to start transaction");
   } finally {
     setStarting(false);
   }
