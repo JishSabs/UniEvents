@@ -7,8 +7,7 @@ import { MARKETPLACE_CATEGORIES, LISTING_TYPES } from "@/lib/utils";
 import { ListingType, PriceType } from "@/types";
 import { X, Loader2, ImagePlus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 interface CreateListingModalProps {
   onClose: () => void;
@@ -96,17 +95,34 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
     });
   };
 
-  const uploadImages = async (userId: string): Promise<string[]> => {
-    const urls: string[] = [];
-    for (const file of imageFiles) {
-      const path = `marketplace/${userId}/${Date.now()}-${file.name}`;
-      const storageRef = ref(storage, path);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      urls.push(url);
+ const uploadImages = async (): Promise<string[]> => {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error("Cloudinary is not configured. Missing env variables.");
+  }
+
+  const urls: string[] = [];
+  for (const file of imageFiles) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      { method: "POST", body: formData }
+    );
+
+    if (!res.ok) {
+      throw new Error("Image upload failed");
     }
-    return urls;
-  };
+
+    const data = await res.json();
+    urls.push(data.secure_url);
+  }
+  return urls;
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +141,7 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
       let imageURLs: string[] = [];
       if (imageFiles.length > 0) {
         setUploadingImages(true);
-        imageURLs = await uploadImages(profile.uid);
+        imageURLs = await uploadImages();
         setUploadingImages(false);
       }
 
