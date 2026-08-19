@@ -185,6 +185,8 @@ export default function ProfilePage() {
                     listing={listing}
                     canDelete={listing.authorId === profile.uid || isAdmin}
                     onDelete={handleDeleteListing}
+                    currentUserId={profile.uid}
+                    currentUserName={profile.displayName}
                   />
                 ))}
               </div>

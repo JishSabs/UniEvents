@@ -112,3 +112,30 @@ export interface SelectOption {
   value: string;
   label: string;
 }
+
+// ─── Live Transactions ────────────────────────────────────────────────────────
+
+export type TransactionStatus = "active" | "ended";
+
+export interface GeoPoint {
+  lat: number;
+  lng: number;
+  updatedAt: Timestamp;
+}
+
+export interface Transaction {
+  id: string;
+  listingId: string;
+  listingTitle: string;
+  buyerId: string;
+  buyerName: string;
+  sellerId: string;
+  sellerName: string;
+  status: TransactionStatus;
+  buyerSharing: boolean;
+  sellerSharing: boolean;
+  buyerLocation?: GeoPoint;
+  sellerLocation?: GeoPoint;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}

@@ -159,6 +159,8 @@ function MarketplaceContent() {
               listing={listing}
               canDelete={isAdmin || listing.authorId === profile?.uid}
               onDelete={handleDelete}
+              currentUserId={profile?.uid}
+              currentUserName={profile?.displayName}
             />
           ))}
         </div>

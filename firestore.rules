@@ -76,5 +76,13 @@ service cloud.firestore {
       allow update: if isOwner(resource.data.userId);
       allow delete: if isOwner(resource.data.userId);
     }
+
+    match /transactions/{transactionId} {
+  allow create: if request.auth != null && request.auth.uid == request.resource.data.buyerId;
+  allow read: if request.auth != null &&
+    (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
+  allow update: if request.auth != null &&
+    (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId);
+}
   }
 }

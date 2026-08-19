@@ -1,5 +1,9 @@
 "use client";
-
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { startTransaction } from "@/lib/transactions";
+import { Navigation } from "lucide-react";
+import toast from "react-hot-toast";
 import { MarketplaceListing } from "@/types";
 import { cn, timeAgo, formatPrice } from "@/lib/utils";
 import {
@@ -20,6 +24,8 @@ interface ListingCardProps {
   listing: MarketplaceListing;
   canDelete?: boolean;
   onDelete?: (id: string) => void;
+  currentUserId?: string;
+  currentUserName?: string;
 }
 
 const TYPE_CONFIG = {
@@ -29,9 +35,36 @@ const TYPE_CONFIG = {
   gig: { label: "Gig", icon: Star, color: "bg-orange-100 text-orange-700" },
 };
 
-export default function ListingCard({ listing, canDelete, onDelete }: ListingCardProps) {
+export default function ListingCard({ listing, canDelete, onDelete, currentUserId, currentUserName }: ListingCardProps) {
   const config = TYPE_CONFIG[listing.type];
   const TypeIcon = config.icon;
+  const router = useRouter();
+const [starting, setStarting] = useState(false);
+const isOwner = currentUserId === listing.authorId;
+
+const handleStartTransaction = async () => {
+  if (!currentUserId || !currentUserName) {
+    toast.error("Please log in to start a transaction");
+    return;
+  }
+  setStarting(true);
+  try {
+    const id = await startTransaction({
+      listingId: listing.id,
+      listingTitle: listing.title,
+      buyerId: currentUserId,
+      buyerName: currentUserName,
+      sellerId: listing.authorId,
+      sellerName: listing.authorName,
+    });
+    router.push(`/transactions/${id}`);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to start transaction");
+  } finally {
+    setStarting(false);
+  }
+};
 
   return (
     <div className="card-hover bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full flex flex-col">
@@ -150,6 +183,16 @@ export default function ListingCard({ listing, canDelete, onDelete }: ListingCar
               </a>
             )}
           </div>
+          {!isOwner && currentUserId && (
+  <button
+    onClick={handleStartTransaction}
+    disabled={starting}
+    className="w-full mt-2 flex items-center justify-center gap-1.5 py-2 bg-[#0f2d6b] text-white rounded-lg text-xs font-semibold hover:bg-[#1a3e8a] transition-colors disabled:opacity-60"
+  >
+    <Navigation size={12} />
+    {starting ? "Starting…" : "Start Transaction & Share Location"}
+  </button>
+)}
         </div>
       </div>
     </div>
