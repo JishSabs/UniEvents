@@ -89,10 +89,10 @@ const handleStartTransaction = async () => {
         </div>
       )}
 
-      <div className="p-4 flex flex-col flex-1">
+      <div className="p-4 flex flex-col flex-1 min-h-0">
         {/* Title & price */}
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2"
+          <h3 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2 break-words"
             style={{ fontFamily: "var(--font-display)" }}>
             {listing.title}
           </h3>
@@ -113,7 +113,7 @@ const handleStartTransaction = async () => {
           )}
         </div>
 
-        <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1 leading-relaxed">
+        <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1 leading-relaxed overflow-hidden min-h-0">
           {listing.description}
         </p>
 
