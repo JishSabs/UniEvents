@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { subscribeToTransaction, updateMyLocation, stopSharing } from "@/lib/transactions";
 import { Transaction } from "@/types";
 import { Loader2, MapPin, StopCircle, ArrowLeft } from "lucide-react";
+import { subscribeToPresence } from "@/lib/presence";
 import toast from "react-hot-toast";
 import dynamicClient from "next/dynamic";
 
@@ -26,6 +27,9 @@ export default function TransactionPage() {
   const router = useRouter();
   const { profile, loading: authLoading } = useAuth();
 
+    const [buyerOnline, setBuyerOnline] = useState<boolean>(false);
+    const [sellerOnline, setSellerOnline] = useState<boolean>(false);
+
   const [transaction, setTransaction] = useState<Transaction | null | undefined>(undefined);
   const [locationError, setLocationError] = useState<string | null>(null);
   const watchIdRef = useRef<number | null>(null);
@@ -35,6 +39,14 @@ export default function TransactionPage() {
     const unsub = subscribeToTransaction(id, setTransaction);
     return () => unsub();
   }, [id]);
+
+  // subscribe to buyer/seller presence when transaction loads
+  useEffect(() => {
+    if (!transaction) return;
+    const unsubBuyer = transaction.buyerId ? subscribeToPresence(transaction.buyerId, (s) => setBuyerOnline(s?.state === 'online')) : () => {};
+    const unsubSeller = transaction.sellerId ? subscribeToPresence(transaction.sellerId, (s) => setSellerOnline(s?.state === 'online')) : () => {};
+    return () => { unsubBuyer(); unsubSeller(); };
+  }, [transaction]);
 
   const role: "buyer" | "seller" | null =
     !transaction || !profile
@@ -133,10 +145,18 @@ export default function TransactionPage() {
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
+            <div>
             <h1 className="text-lg font-semibold text-slate-900">{transaction.listingTitle}</h1>
-            <p className="text-sm text-slate-500 mt-0.5">
-              {transaction.buyerName} (buyer) ↔ {transaction.sellerName} (seller)
+            <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-2">
+              <span className="flex items-center gap-2">
+                <span className={`inline-block w-2 h-2 rounded-full ${buyerOnline ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+                <span>{transaction.buyerName} (buyer)</span>
+              </span>
+              <span>↔</span>
+              <span className="flex items-center gap-2">
+                <span className={`inline-block w-2 h-2 rounded-full ${sellerOnline ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+                <span>{transaction.sellerName} (seller)</span>
+              </span>
             </p>
           </div>
           <span

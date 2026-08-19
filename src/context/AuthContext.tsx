@@ -25,6 +25,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { setMyPresence, clearMyPresence } from "@/lib/presence";
 import { UserProfile, UserRole } from "@/types";
 
 interface AuthContextType {
@@ -129,12 +130,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (profileDoc.exists()) {
           setProfile(profileDoc.data() as UserProfile);
         }
+        // set realtime presence
+        try {
+          setMyPresence(firebaseUser.uid);
+          (window as any).__unievents_currentUid = firebaseUser.uid;
+          const handleVisibility = () => {
+            if (document.visibilityState === 'visible') setMyPresence(firebaseUser.uid);
+            else clearMyPresence(firebaseUser.uid);
+          };
+          document.addEventListener('visibilitychange', handleVisibility);
+          (window as any).__unievents_presenceCleanup = () => {
+            document.removeEventListener('visibilitychange', handleVisibility);
+            clearMyPresence(firebaseUser.uid);
+          };
+        } catch (e) {
+          console.error('presence init', e);
+        }
         // start activity listeners when signed in
         const cleanup = setupActivityListeners();
         // attach cleanup to unload
         (window as any).__unievents_cleanupAuthListeners = cleanup;
       } else {
         setProfile(null);
+          try {
+            // clear presence on sign out
+            const cur = (window as any).__unievents_currentUid;
+            if (cur) clearMyPresence(cur);
+            (window as any).__unievents_currentUid = null;
+          } catch (e) {}
         // clear stored activity on sign out
         try {
           localStorage.removeItem(LAST_ACTIVITY_KEY);
@@ -146,6 +169,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (cl) cl();
           (window as any).__unievents_cleanupAuthListeners = null;
         } catch (e) {}
+        try {
+          const pcl = (window as any).__unievents_presenceCleanup;
+          if (pcl) pcl();
+          (window as any).__unievents_presenceCleanup = null;
+        } catch (e) {}
       }
       setLoading(false);
     });
@@ -155,6 +183,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const cl = (window as any).__unievents_cleanupAuthListeners;
         if (cl) cl();
+      } catch (e) {}
+      try {
+        const pcl = (window as any).__unievents_presenceCleanup;
+        if (pcl) pcl();
       } catch (e) {}
     };
   }, []);
