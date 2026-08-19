@@ -55,7 +55,7 @@ export default function TransactionPage() {
     }
 
     if (!navigator.geolocation) {
-      setLocationError("Your browser doesn't support location sharing.");
+      setLocationError("Your browser does not support location sharing.");
       return;
     }
 
@@ -114,7 +114,7 @@ export default function TransactionPage() {
   if (!role) {
     return (
       <div className="min-h-screen flex items-center justify-center text-slate-500">
-        You're not part of this transaction.
+        You are not part of this transaction.
       </div>
     );
   }
