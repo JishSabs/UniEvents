@@ -8,6 +8,9 @@ import { subscribeToTransaction, updateMyLocation, stopSharing } from "@/lib/tra
 import { Transaction } from "@/types";
 import { Loader2, MapPin, StopCircle, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
+import dynamicClient from "next/dynamic";
+
+const Chat = dynamicClient(() => import("@/components/transactions/Chat"), { ssr: false });
 
 const LiveMapInner = dynamic(() => import("@/components/transactions/LiveMapInner"), {
   ssr: false,
@@ -159,6 +162,11 @@ export default function TransactionPage() {
             buyerName={transaction.buyerName}
             sellerName={transaction.sellerName}
           />
+        </div>
+
+        <div className="p-5 bg-white">
+          <h2 className="text-sm font-semibold mb-2">Messages</h2>
+          <Chat transactionId={transaction.id} currentUserId={profile?.uid} currentUserName={profile?.displayName} />
         </div>
 
         <div className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

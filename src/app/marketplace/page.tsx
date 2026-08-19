@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getActiveListings, deleteListing } from "@/lib/marketplace";
 import { MarketplaceListing, ListingType } from "@/types";
 import ListingCard from "@/components/marketplace/ListingCard";
 import CreateListingModal from "@/components/marketplace/CreateListingModal";
 import { MARKETPLACE_CATEGORIES, LISTING_TYPES, cn } from "@/lib/utils";
-import { Plus, Search, Loader2, ShoppingBag, Wrench, Briefcase, Star } from "lucide-react";
+import { Plus, Search, Loader2, ShoppingBag, Wrench, Briefcase, Star, Mail } from "lucide-react";
 import toast from "react-hot-toast";
 
 const TYPE_ICONS = {
@@ -32,6 +32,7 @@ const CATEGORY_EMOJIS: Record<string, string> = {
 
 function MarketplaceContent() {
   const { user, profile, isAdmin } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
@@ -93,12 +94,22 @@ function MarketplaceContent() {
               </h1>
             </div>
             {user && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 bg-white text-[#0d9488] px-6 py-3 rounded-2xl font-semibold text-sm hover:bg-teal-50 transition-colors shrink-0 shadow-lg"
-              >
-                <Plus size={18} /> Post Listing
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => router.push('/inbox')}
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                  title="Inbox"
+                >
+                  <Mail size={18} />
+                </button>
+
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="flex items-center gap-2 bg-white text-[#0d9488] px-6 py-3 rounded-2xl font-semibold text-sm hover:bg-teal-50 transition-colors shrink-0 shadow-lg"
+                >
+                  <Plus size={18} /> Post Listing
+                </button>
+              </div>
             )}
           </div>
 

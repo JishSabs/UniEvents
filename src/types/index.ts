@@ -139,3 +139,20 @@ export interface Transaction {
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
+
+// optional fields used for inbox/chat previews
+export interface TransactionPreview extends Transaction {
+  lastMessage?: string;
+  lastMessageAt?: Timestamp;
+  unreadBuyer?: boolean;
+  unreadSeller?: boolean;
+}
+
+// Messages inside a transaction chat
+export interface Message {
+  id: string;
+  senderId: string;
+  senderName: string;
+  text: string;
+  createdAt: Timestamp;
+}

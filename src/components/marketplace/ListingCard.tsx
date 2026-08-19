@@ -183,7 +183,7 @@ const handleStartTransaction = async () => {
               </a>
             )}
           </div>
-          {!isOwner && currentUserId && (
+          {currentUserId && (
   <button
     onClick={handleStartTransaction}
     disabled={starting}
