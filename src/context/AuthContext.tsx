@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useRef,
   ReactNode,
 } from "react";
 import {
@@ -46,7 +47,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const idleTimerRef = useRef<number | null>(null);
 
+  const IDLE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+  const LAST_ACTIVITY_KEY = "unievents_lastActivity";
+  const LAST_VISIT_KEY = "unievents_lastVisitDate";
+
+  const getToday = () => new Date().toISOString().slice(0, 10);
+
+  const clearIdleTimer = () => {
+    if (idleTimerRef.current !== null) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+  };
+
+  const resetActivity = () => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+      localStorage.setItem(LAST_VISIT_KEY, getToday());
+    } catch (e) {}
+    clearIdleTimer();
+    idleTimerRef.current = window.setTimeout(async () => {
+      try {
+        await signOut(auth);
+      } catch (e) {
+        console.error(e);
+      }
+      setProfile(null);
+      setUser(null);
+    }, IDLE_TIMEOUT) as unknown as number;
+  };
+
+  const setupActivityListeners = () => {
+    if (typeof window === "undefined") return;
+    const events = ["mousemove", "keydown", "click", "touchstart", "visibilitychange"];
+    const handler = () => resetActivity();
+    events.forEach((ev) => document.addEventListener(ev, handler));
+    // Initialize activity timestamp and timer
+    resetActivity();
+    return () => {
+      clearIdleTimer();
+      events.forEach((ev) => document.removeEventListener(ev, handler));
+    };
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!auth || !db) {
       setLoading(false);
@@ -54,18 +101,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      // If running client-side, check last activity/visit and expire session if needed
+      if (firebaseUser && typeof window !== "undefined") {
+        try {
+          const lastVisit = localStorage.getItem(LAST_VISIT_KEY);
+          const lastActivity = parseInt(localStorage.getItem(LAST_ACTIVITY_KEY) || "0", 10);
+          const now = Date.now();
+          const expiredByIdle = lastActivity > 0 && now - lastActivity > IDLE_TIMEOUT;
+          const differentDay = lastVisit && lastVisit !== getToday();
+          if (expiredByIdle || differentDay) {
+            await signOut(auth);
+            setUser(null);
+            setProfile(null);
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
       setUser(firebaseUser);
       if (firebaseUser) {
         const profileDoc = await getDoc(doc(db, "users", firebaseUser.uid));
         if (profileDoc.exists()) {
           setProfile(profileDoc.data() as UserProfile);
         }
+        // start activity listeners when signed in
+        const cleanup = setupActivityListeners();
+        // attach cleanup to unload
+        (window as any).__unievents_cleanupAuthListeners = cleanup;
       } else {
         setProfile(null);
+        // clear stored activity on sign out
+        try {
+          localStorage.removeItem(LAST_ACTIVITY_KEY);
+          localStorage.removeItem(LAST_VISIT_KEY);
+        } catch (e) {}
+        // cleanup listeners if present
+        try {
+          const cl = (window as any).__unievents_cleanupAuthListeners;
+          if (cl) cl();
+          (window as any).__unievents_cleanupAuthListeners = null;
+        } catch (e) {}
       }
       setLoading(false);
     });
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      // cleanup listeners when provider unmounts
+      try {
+        const cl = (window as any).__unievents_cleanupAuthListeners;
+        if (cl) cl();
+      } catch (e) {}
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -89,6 +178,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setUser(cred.user);
     setProfile(profileData);
+    // initialize activity timestamps on sign in
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+        localStorage.setItem(LAST_VISIT_KEY, getToday());
+      } catch (e) {}
+    }
   };
 
   const signUp = async (
@@ -120,11 +216,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     await setDoc(doc(db, "users", cred.user.uid), newProfile);
     setProfile(newProfile as UserProfile);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+        localStorage.setItem(LAST_VISIT_KEY, getToday());
+      } catch (e) {}
+    }
   };
 
   const logout = async () => {
     await signOut(auth);
     setProfile(null);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(LAST_ACTIVITY_KEY);
+        localStorage.removeItem(LAST_VISIT_KEY);
+      } catch (e) {}
+    }
   };
 
   const isAdmin = profile?.role === "admin";
