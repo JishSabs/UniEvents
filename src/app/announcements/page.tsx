@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
   getApprovedAnnouncements,
@@ -19,7 +19,8 @@ import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 
 function AnnouncementsContent() {
-  const { user, isModerator } = useAuth();
+  const { user, isModerator, loading: authLoading } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -45,6 +46,12 @@ function AnnouncementsContent() {
   }, [filterSource, filterCategory]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/auth/login");
+    }
+  }, [authLoading, user, router]);
 
   const handleApprove = async (id: string) => {
     try {

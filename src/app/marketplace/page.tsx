@@ -34,7 +34,7 @@ const CATEGORY_EMOJIS: Record<string, string> = {
 const PAGE_SIZE = 8;
 
 function MarketplaceContent() {
-  const { user, profile, isAdmin } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -67,6 +67,12 @@ function MarketplaceContent() {
   }, [filterType, filterCategory]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/auth/login");
+    }
+  }, [authLoading, user, router]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this listing?")) return;
