@@ -9,6 +9,7 @@ import ListingCard from "@/components/marketplace/ListingCard";
 import CreateListingModal from "@/components/marketplace/CreateListingModal";
 import { MARKETPLACE_CATEGORIES, LISTING_TYPES, cn } from "@/lib/utils";
 import { Plus, Search, Loader2, ShoppingBag, Wrench, Briefcase, Star, Mail, ChevronDown } from "lucide-react";
+import Image from "next/image";
 import toast from "react-hot-toast";
 
 const TYPE_ICONS = {
@@ -38,6 +39,10 @@ function MarketplaceContent() {
   const searchParams = useSearchParams();
 
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
+  const marqueeImages = listings
+    .flatMap((l) => l.imageURLs)
+    .filter(Boolean)
+    .slice(0, 14);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filterType, setFilterType] = useState<ListingType | undefined>(
@@ -90,41 +95,73 @@ function MarketplaceContent() {
 
   return (
     <div className="bg-slate-50 min-h-screen">
-      {/* Hero banner */}
-      <div className="bg-gradient-to-br from-[#0d9488] via-[#0f766e] to-[#0f2d6b] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-white blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 w-40 h-40 rounded-full bg-white blur-2xl" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-teal-100 text-xs font-semibold tracking-[0.2em] uppercase mb-2">
-                Campus Marketplace
-              </p>
-              <h1 className="text-2xl sm:text-4xl font-bold text-white" style={{ fontFamily: "var(--font-display)" }}>
-                Buy, sell & hire<br className="hidden sm:block" /> within your community
-              </h1>
-            </div>
-            {user && (
-              <div className="flex items-center gap-2 sm:gap-3">
-                <button
-                  onClick={() => router.push("/inbox")}
-                  className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shrink-0"
-                  title="Inbox"
-                >
-                  <Mail size={18} />
-                </button>
-
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="flex items-center gap-2 bg-white text-[#0d9488] px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl font-semibold text-sm hover:bg-teal-50 transition-colors shrink-0 shadow-lg"
-                >
-                  <Plus size={18} /> <span className="hidden xs:inline">Post Listing</span>
-                </button>
-              </div>
-            )}
+     {/* Hero */}
+<div className="relative overflow-hidden">
+  {/* Sliding product photos backdrop */}
+  {listings.length > 0 && (
+    <div className="absolute inset-0 flex flex-col justify-between py-2 opacity-30">
+      <div className="flex gap-3 animate-marquee-left w-max">
+        {[...marqueeImages, ...marqueeImages].map((src, i) => (
+          <div
+            key={`row1-${i}`}
+            className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden shrink-0 grayscale"
+          >
+            <Image src={src} alt="" fill className="object-cover" />
           </div>
+        ))}
+      </div>
+      <div className="flex gap-3 animate-marquee-right w-max">
+        {[...marqueeImages].reverse().concat([...marqueeImages].reverse()).map((src, i) => (
+          <div
+            key={`row2-${i}`}
+            className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden shrink-0 grayscale"
+          >
+            <Image src={src} alt="" fill className="object-cover" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {/* Color wash on top of the photos */}
+  <div className="absolute inset-0 bg-gradient-to-br from-[#0d9488]/90 via-[#0f766e]/90 to-[#0f2d6b]/90" />
+
+  <div className="absolute inset-0 opacity-10">
+    <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-white blur-3xl" />
+    <div className="absolute bottom-0 left-1/4 w-40 h-40 rounded-full bg-white blur-2xl" />
+  </div>
+
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <p className="text-teal-100 text-xs font-semibold tracking-[0.2em] uppercase mb-2">
+          Campus Marketplace
+        </p>
+        <h1 className="text-2xl sm:text-4xl font-bold text-white" style={{ fontFamily: "var(--font-display)" }}>
+          Buy, sell & hire<br className="hidden sm:block" /> within your community
+        </h1>
+      </div>
+      {user && (
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            onClick={() => router.push("/inbox")}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shrink-0"
+            title="Inbox"
+          >
+            <Mail size={18} />
+          </button>
+
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 bg-white text-[#0d9488] px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl font-semibold text-sm hover:bg-teal-50 transition-colors shrink-0 shadow-lg"
+          >
+            <Plus size={18} /> <span className="hidden xs:inline">Post Listing</span>
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+</div>
 
           {/* Search bar sits on the banner */}
           <div className="mt-6 sm:mt-8 bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2 shadow-xl max-w-2xl">
@@ -149,9 +186,7 @@ function MarketplaceContent() {
               ))}
             </select>
           </div>
-        </div>
-      </div>
-
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Category icon strip */}
         <div className="flex gap-3 overflow-x-auto pb-2 mb-5 -mx-1 px-1 scrollbar-hide">

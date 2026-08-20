@@ -108,8 +108,8 @@ function AnnouncementsContent() {
         )}
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-8 flex flex-col sm:flex-row gap-4">
+     {/* Filters */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-sm">
         {/* Search */}
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -118,26 +118,26 @@ function AnnouncementsContent() {
             placeholder="Search announcements..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b]"
+            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b] transition-shadow"
           />
         </div>
 
         {/* Source filter */}
-        <div className="flex items-center gap-2">
-          <Filter size={14} className="text-slate-400 shrink-0" />
+        <div className="flex items-center gap-1.5 bg-slate-50 rounded-xl p-1">
+          <Filter size={13} className="text-slate-400 shrink-0 ml-1.5" />
           {(["all", "official", "student"] as const).map((src) => (
             <button
               key={src}
               onClick={() => setFilterSource(src === "all" ? undefined : src)}
               className={cn(
-                "px-3 py-2 rounded-lg text-xs font-medium transition-colors",
+                "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
                 (src === "all" ? !filterSource : filterSource === src)
                   ? src === "official"
-                    ? "bg-[#0f2d6b] text-white"
+                    ? "bg-[#0f2d6b] text-white shadow-sm"
                     : src === "student"
-                    ? "bg-slate-700 text-white"
-                    : "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-slate-700 text-white shadow-sm"
+                    : "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
               )}
             >
               {src === "all" ? "All" : src === "official" ? "🏛️ Official" : "🎓 Student"}
