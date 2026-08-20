@@ -123,8 +123,9 @@ function MarketplaceContent() {
     </div>
   )}
 
-  {/* Color wash on top of the photos */}
-  <div className="absolute inset-0 bg-gradient-to-br from-[#0d9488]/90 via-[#0f766e]/90 to-[#0f2d6b]/90" />
+ {/* Color wash on top of the photos — lighter, and stronger at the edges/bottom where text sits */}
+  <div className="absolute inset-0 bg-gradient-to-br from-[#0d9488]/55 via-[#0f766e]/50 to-[#0f2d6b]/70" />
+  <div className="absolute inset-0 bg-gradient-to-t from-[#0f2d6b]/80 via-transparent to-transparent" />
 
   <div className="absolute inset-0 opacity-10">
     <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-white blur-3xl" />
