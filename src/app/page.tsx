@@ -131,7 +131,7 @@ export default function HomePage() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-8 sm:p-10 mt-40">
             <div className="flex items-center gap-2 text-[#0f2d6b] mb-3">
               <Sparkles size={16} className="text-[#f5a623]" />
-              <span className="text-xs font-semibold uppercase tracking-[0.15em]">What's waiting inside</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.15em]">What&apos;s waiting inside</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {features.map(({ icon: Icon, color, iconColor, title, desc }) => (
