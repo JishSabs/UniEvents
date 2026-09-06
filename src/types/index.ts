@@ -42,7 +42,9 @@ export interface Announcement {
   authorId: string;
   authorName: string;
   authorRole: UserRole;
-  imageURL?: string;
+  attachmentURL?: string;
+  attachmentType?: "image" | "pdf";
+  attachmentName?: string;
   tags?: string[];
   isPinned: boolean;
   viewCount: number;
@@ -53,7 +55,6 @@ export interface Announcement {
   eventDate?: Timestamp;            // for event announcements
   eventLocation?: string;
 }
-
 // ─── Marketplace ─────────────────────────────────────────────────────────────
 
 export type ListingType = "product" | "service" | "job" | "gig";

@@ -12,6 +12,8 @@ import {
   MapPin,
   ShieldCheck,
   GraduationCap,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -36,11 +38,10 @@ const CATEGORY_COLORS: Record<string, string> = {
   other: "bg-slate-100 text-slate-600",
 };
 
-// Deterministic, gentle tilt for pinned cards — same card always gets the same angle
 function tiltFor(id: string) {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) % 1000;
-  const deg = (hash % 3) - 1; // -1, 0, or 1 degree
+  const deg = (hash % 3) - 1;
   return deg;
 }
 
@@ -60,7 +61,6 @@ export default function AnnouncementCard({
       className="relative"
       style={announcement.isPinned ? { transform: `rotate(${tilt}deg)` } : undefined}
     >
-      {/* Pin — only for pinned posts, sits half on/half off the card */}
       {announcement.isPinned && (
         <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
           <div className="w-3.5 h-3.5 rounded-full bg-amber-400 shadow-[0_2px_4px_rgba(0,0,0,0.25)] ring-2 ring-white" />
@@ -68,7 +68,6 @@ export default function AnnouncementCard({
         </div>
       )}
 
-      {/* Seal — only for official posts, overlaps the top-left corner */}
       {isOfficial && (
         <div className="absolute -top-3 -left-3 z-10 w-9 h-9 rounded-full bg-[#0f2d6b] ring-2 ring-[#f5a623] shadow-md flex items-center justify-center">
           <ShieldCheck size={16} className="text-[#f5a623]" />
@@ -83,7 +82,6 @@ export default function AnnouncementCard({
             : "border-slate-200 shadow-sm hover:shadow-md"
         )}
       >
-        {/* Source banner */}
         <div
           className={cn(
             "px-4 py-2.5 flex items-center justify-between",
@@ -114,17 +112,36 @@ export default function AnnouncementCard({
           </span>
         </div>
 
-        {/* Content */}
         <div className="p-5">
-          {announcement.imageURL && (
+          {announcement.attachmentType === "image" && announcement.attachmentURL && (
             <div className="mb-4 rounded-xl overflow-hidden h-48 relative bg-slate-100">
               <Image
-                src={announcement.imageURL}
+                src={announcement.attachmentURL}
                 alt={announcement.title}
                 fill
                 className="object-cover"
               />
             </div>
+          )}
+
+          {announcement.attachmentType === "pdf" && announcement.attachmentURL && (
+            
+             <a href={announcement.attachmentURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mb-4 flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors group"
+            >
+              <div className="w-10 h-12 rounded-md bg-red-500 flex items-center justify-center shrink-0 shadow-sm">
+                <FileText size={18} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-slate-700 truncate">
+                  {announcement.attachmentName || "Document.pdf"}
+                </p>
+                <p className="text-xs text-slate-400">PDF · Tap to view</p>
+              </div>
+              <ExternalLink size={14} className="text-slate-400 group-hover:text-slate-600 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+            </a>
           )}
 
           <h3
@@ -138,7 +155,6 @@ export default function AnnouncementCard({
             {announcement.content}
           </p>
 
-          {/* Event details */}
           {(announcement.eventDate || announcement.eventLocation) && (
             <div className="flex flex-wrap gap-3 mb-4">
               {announcement.eventDate && (
@@ -156,7 +172,6 @@ export default function AnnouncementCard({
             </div>
           )}
 
-          {/* Footer */}
           <div className="flex items-center justify-between pt-3 border-t border-slate-100">
             <div>
               <p className="text-xs font-medium text-slate-700">{announcement.authorName}</p>
@@ -168,7 +183,6 @@ export default function AnnouncementCard({
                 {announcement.viewCount}
               </div>
 
-              {/* Moderation actions */}
               {canModerate && (
                 <div className="flex items-center gap-1">
                   {announcement.status === "pending" && (
@@ -215,7 +229,6 @@ export default function AnnouncementCard({
             </div>
           </div>
 
-          {/* Status badge for pending */}
           {announcement.status === "pending" && (
             <div className="mt-3 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
               <p className="text-xs text-amber-700 font-medium">⏳ Awaiting approval</p>

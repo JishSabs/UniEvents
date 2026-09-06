@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { createAnnouncement } from "@/lib/announcements";
 import { ANNOUNCEMENT_CATEGORIES } from "@/lib/utils";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, Upload, FileText } from "lucide-react";
 import toast from "react-hot-toast";
 import { Timestamp } from "firebase/firestore";
 
@@ -13,12 +13,15 @@ interface CreateAnnouncementModalProps {
   onCreated: () => void;
 }
 
+const MAX_FILE_SIZE_MB = 10;
+
 export default function CreateAnnouncementModal({
   onClose,
   onCreated,
 }: CreateAnnouncementModalProps) {
   const { profile, isAdmin, isModerator } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: "",
     content: "",
@@ -29,6 +32,75 @@ export default function CreateAnnouncementModal({
     tags: "",
   });
 
+  const [file, setFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<"image" | "pdf" | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    e.target.value = "";
+    if (!selected) return;
+
+    const isPdf = selected.type === "application/pdf";
+    const isImage = selected.type.startsWith("image/");
+
+    if (!isPdf && !isImage) {
+      toast.error("Only images and PDF files are supported");
+      return;
+    }
+    if (selected.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      toast.error(`File must be under ${MAX_FILE_SIZE_MB}MB`);
+      return;
+    }
+
+    setFile(selected);
+    setFileType(isPdf ? "pdf" : "image");
+
+    if (isImage) {
+      const reader = new FileReader();
+      reader.onload = () => setFilePreview(reader.result as string);
+      reader.readAsDataURL(selected);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const removeFile = () => {
+    setFile(null);
+    setFilePreview(null);
+    setFileType(null);
+  };
+
+  const uploadAttachment = async (
+    fileToUpload: File
+  ): Promise<{ url: string; type: "image" | "pdf" }> => {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+      throw new Error("Cloudinary is not configured. Missing env variables.");
+    }
+
+    const isPdf = fileToUpload.type === "application/pdf";
+    const resourceType = isPdf ? "raw" : "image";
+
+    const formData = new FormData();
+    formData.append("file", fileToUpload);
+    formData.append("upload_preset", uploadPreset);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
+      { method: "POST", body: formData }
+    );
+
+    if (!res.ok) {
+      throw new Error(isPdf ? "PDF upload failed" : "Image upload failed");
+    }
+
+    const data = await res.json();
+    return { url: data.secure_url, type: isPdf ? "pdf" : "image" };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
@@ -38,19 +110,43 @@ export default function CreateAnnouncementModal({
     }
 
     setLoading(true);
+
+    let attachmentURL: string | undefined;
+    let attachmentType: "image" | "pdf" | undefined;
+    let attachmentName: string | undefined;
+
+    if (file) {
+      setUploading(true);
+      try {
+        const result = await uploadAttachment(file);
+        attachmentURL = result.url;
+        attachmentType = result.type;
+        attachmentName = file.name;
+      } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : "Please try again.";
+        toast.error(`Failed to upload attachment. ${message}`);
+        setUploading(false);
+        setLoading(false);
+        return;
+      }
+      setUploading(false);
+    }
+
     try {
-   await createAnnouncement({
-  title: form.title.trim(),
-  content: form.content.trim(),
-  category: form.category as never,
-  source: form.source as "official" | "student",
-  authorId: profile.uid,
-  authorName: profile.displayName,
-  authorRole: profile.role,
-  tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
-  ...(form.eventLocation && { eventLocation: form.eventLocation }),
-  ...(form.eventDate && { eventDate: Timestamp.fromDate(new Date(form.eventDate)) }),
-});
+      await createAnnouncement({
+        title: form.title.trim(),
+        content: form.content.trim(),
+        category: form.category as never,
+        source: form.source as "official" | "student",
+        authorId: profile.uid,
+        authorName: profile.displayName,
+        authorRole: profile.role,
+        tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+        ...(form.eventLocation && { eventLocation: form.eventLocation }),
+        ...(form.eventDate && { eventDate: Timestamp.fromDate(new Date(form.eventDate)) }),
+        ...(attachmentURL && { attachmentURL, attachmentType, attachmentName }),
+      });
 
       const isAutoApproved = profile.role === "admin" || profile.role === "moderator";
       toast.success(
@@ -68,10 +164,11 @@ export default function CreateAnnouncementModal({
     }
   };
 
+  const isBusy = loading || uploading;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-100">
           <div>
             <h2 className="text-xl font-semibold text-slate-900" style={{ fontFamily: "var(--font-display)" }}>
@@ -92,12 +189,9 @@ export default function CreateAnnouncementModal({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Source selector — only admins/mods can post as official */}
           {isModerator && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Post Type
-              </label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Post Type</label>
               <div className="flex gap-3">
                 {["official", "student"].map((src) => (
                   <button
@@ -119,7 +213,6 @@ export default function CreateAnnouncementModal({
             </div>
           )}
 
-          {/* Title */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Title <span className="text-red-500">*</span>
@@ -134,7 +227,6 @@ export default function CreateAnnouncementModal({
             />
           </div>
 
-          {/* Category */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Category</label>
             <select
@@ -148,7 +240,6 @@ export default function CreateAnnouncementModal({
             </select>
           </div>
 
-          {/* Content */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Content <span className="text-red-500">*</span>
@@ -163,7 +254,48 @@ export default function CreateAnnouncementModal({
             />
           </div>
 
-          {/* Event details (optional) */}
+          {/* Attachment upload */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Attachment <span className="text-slate-400">(optional — photo or PDF, max {MAX_FILE_SIZE_MB}MB)</span>
+            </label>
+
+            {!file ? (
+              <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-200 rounded-xl py-6 cursor-pointer hover:border-[#0f2d6b]/40 hover:bg-slate-50 transition-colors">
+                <Upload size={20} className="text-slate-400" />
+                <span className="text-xs text-slate-500">Click to upload a photo or PDF</span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50">
+                {fileType === "image" && filePreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={filePreview} alt="Preview" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-red-500 flex items-center justify-center shrink-0">
+                    <FileText size={20} className="text-white" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
+                  <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeFile}
+                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -190,7 +322,6 @@ export default function CreateAnnouncementModal({
             </div>
           </div>
 
-          {/* Tags */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Tags <span className="text-slate-400">(comma-separated)</span>
@@ -204,7 +335,6 @@ export default function CreateAnnouncementModal({
             />
           </div>
 
-          {/* Submit */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"
@@ -215,11 +345,11 @@ export default function CreateAnnouncementModal({
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={isBusy}
               className="flex-1 py-2.5 bg-[#0f2d6b] text-white rounded-xl text-sm font-medium hover:bg-[#1a3e8a] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {loading && <Loader2 size={15} className="animate-spin" />}
-              {loading ? "Posting..." : isModerator ? "Post Now" : "Submit for Review"}
+              {isBusy && <Loader2 size={15} className="animate-spin" />}
+              {uploading ? "Uploading..." : loading ? "Posting..." : isModerator ? "Post Now" : "Submit for Review"}
             </button>
           </div>
         </form>
