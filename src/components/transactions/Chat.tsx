@@ -5,6 +5,7 @@ import { subscribeToMessages, sendMessageWithPreview, markMessagesRead } from "@
 import { Message } from "@/types";
 import { format, isSameDay } from "date-fns";
 import { Send } from "lucide-react";
+import { toDateSafe } from "@/lib/utils";
 
 interface ChatProps {
   transactionId: string;
@@ -49,7 +50,7 @@ export default function Chat({ transactionId, currentUserId, currentUserName }: 
       await sendMessageWithPreview(transactionId, currentUserId, currentUserName, value);
     } catch (err) {
       console.error(err);
-      setText(value); // restore on failure so the user doesn't lose their message
+      setText(value);
     } finally {
       setSending(false);
       inputRef.current?.focus();
@@ -58,7 +59,6 @@ export default function Chat({ transactionId, currentUserId, currentUserName }: 
 
   return (
     <div className="flex flex-col h-96 border-t border-slate-100 bg-slate-50/40">
-      {/* Messages */}
       <div ref={ref} className="p-4 overflow-y-auto flex-1 space-y-1">
         {loading ? (
           <div className="flex flex-col gap-3 h-full justify-end">
@@ -82,8 +82,8 @@ export default function Chat({ transactionId, currentUserId, currentUserName }: 
         ) : (
           messages.map((m, i) => {
             const mine = m.senderId === currentUserId;
-            const date = m.createdAt?.toDate ? m.createdAt.toDate() : null;
-            const prevDate = messages[i - 1]?.createdAt?.toDate ? messages[i - 1].createdAt.toDate() : null;
+            const date = toDateSafe(m.createdAt);
+            const prevDate = toDateSafe(messages[i - 1]?.createdAt);
             const showDateDivider = date && (!prevDate || !isSameDay(date, prevDate));
             const prevSameSender = messages[i - 1]?.senderId === m.senderId && !showDateDivider;
 
@@ -126,7 +126,6 @@ export default function Chat({ transactionId, currentUserId, currentUserName }: 
         )}
       </div>
 
-      {/* Composer */}
       <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
         <input
           ref={inputRef}

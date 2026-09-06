@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { format, isToday, isYesterday } from "date-fns";
 import { Inbox as InboxIcon, ChevronRight } from "lucide-react";
+import { toDateSafe } from "@/lib/utils";
 
 function getInitials(title: string) {
   return title
@@ -22,7 +23,6 @@ function formatTimestamp(date: Date) {
   return format(date, "MMM d");
 }
 
-// deterministic color from string so each listing gets a consistent avatar color
 const AVATAR_COLORS = [
   "bg-[#0f2d6b]/10 text-[#0f2d6b]",
   "bg-teal-100 text-teal-700",
@@ -91,7 +91,7 @@ export default function Inbox() {
             const isUnread =
               (profile.uid === it.buyerId && it.unreadBuyer) ||
               (profile.uid === it.sellerId && it.unreadSeller);
-            const date = it.lastMessageAt?.toDate ? it.lastMessageAt.toDate() : null;
+            const date = toDateSafe(it.lastMessageAt);
 
             return (
               <div
@@ -103,7 +103,6 @@ export default function Inbox() {
                     : "border-slate-100 hover:bg-slate-50 hover:border-slate-200"
                 }`}
               >
-                {/* Avatar */}
                 <div
                   className={`w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-sm font-semibold ${colorFor(
                     it.id
@@ -112,7 +111,6 @@ export default function Inbox() {
                   {getInitials(it.listingTitle || "?")}
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <div className={`truncate ${isUnread ? "font-semibold text-slate-900" : "font-medium text-slate-700"}`}>

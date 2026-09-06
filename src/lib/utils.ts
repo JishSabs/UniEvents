@@ -7,6 +7,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function toDateSafe(value: any): Date | null {
+  if (value && typeof value.toDate === "function") {
+    return value.toDate();
+  }
+  return null;
+}
+
 export function timeAgo(timestamp: Timestamp | null | undefined): string {
   if (!timestamp) return "";
   return formatDistanceToNow(timestamp.toDate(), { addSuffix: true });
