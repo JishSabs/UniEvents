@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/layout/Navbar";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
   title: "UniPortal — Campus Hub",
@@ -11,14 +14,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={inter.variable}>
+      <body className="font-sans">
         <AuthProvider>
           <Toaster
             position="top-right"
             toastOptions={{
-              style: { fontFamily: "var(--font-body)", fontSize: "14px" },
-              success: { iconTheme: { primary: "#0d9488", secondary: "#fff" } },
+              style: { fontFamily: "var(--font-inter)", fontSize: "14px" },
+              success: { iconTheme: { primary: "#059669", secondary: "#fff" } },
             }}
           />
           <Navbar />

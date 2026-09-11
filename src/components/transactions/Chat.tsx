@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { subscribeToMessages, sendMessageWithPreview, markMessagesRead } from "@/lib/transactions";
 import { Message } from "@/types";
 import { format, isSameDay } from "date-fns";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { toDateSafe } from "@/lib/utils";
 
 interface ChatProps {
@@ -98,7 +98,7 @@ export default function Chat({ transactionId, currentUserId, currentUserName }: 
                 )}
                 <div className={`flex items-end gap-2 ${mine ? "justify-end" : "justify-start"} ${prevSameSender ? "mt-0.5" : "mt-3"}`}>
                   {!mine && !prevSameSender && (
-                    <div className="w-6 h-6 rounded-full bg-[#0f2d6b]/10 text-[#0f2d6b] flex items-center justify-center text-[10px] font-semibold shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-semibold shrink-0">
                       {getInitials(m.senderName)}
                     </div>
                   )}
@@ -107,12 +107,12 @@ export default function Chat({ transactionId, currentUserId, currentUserName }: 
                   <div
                     className={`max-w-[75%] px-3.5 py-2 shadow-sm ${
                       mine
-                        ? `bg-[#0f2d6b] text-white ${prevSameSender ? "rounded-2xl rounded-tr-md" : "rounded-2xl rounded-tr-sm"}`
+                        ? `bg-indigo-600 text-white ${prevSameSender ? "rounded-2xl rounded-tr-md" : "rounded-2xl rounded-tr-sm"}`
                         : `bg-white text-slate-800 border border-slate-100 ${prevSameSender ? "rounded-2xl rounded-tl-md" : "rounded-2xl rounded-tl-sm"}`
                     }`}
                   >
                     {!mine && !prevSameSender && (
-                      <div className="text-[11px] font-semibold text-[#0f2d6b] mb-0.5">{m.senderName}</div>
+                      <div className="text-[11px] font-semibold text-indigo-600 mb-0.5">{m.senderName}</div>
                     )}
                     <div className="text-sm leading-snug break-words">{m.text}</div>
                     <div className={`text-[10px] mt-1 text-right ${mine ? "text-white/60" : "text-slate-400"}`}>
@@ -132,7 +132,7 @@ export default function Chat({ transactionId, currentUserId, currentUserName }: 
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={currentUserId ? "Write a message..." : "Log in to send messages"}
-          className="flex-1 px-3.5 py-2.5 border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b]/40 disabled:bg-slate-50 disabled:text-slate-400 transition"
+          className="flex-1 px-3.5 py-2.5 border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 disabled:bg-slate-50 disabled:text-slate-400 transition"
           disabled={!currentUserId}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -144,11 +144,11 @@ export default function Chat({ transactionId, currentUserId, currentUserName }: 
         <button
           onClick={handleSend}
           disabled={!currentUserId || sending || !text.trim()}
-          className="w-10 h-10 shrink-0 flex items-center justify-center bg-[#0f2d6b] text-white rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#0f2d6b]/90 active:scale-95 transition"
+          className="w-10 h-10 shrink-0 flex items-center justify-center bg-indigo-600 text-white rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-700 active:scale-95 transition"
           aria-label="Send message"
         >
           {sending ? (
-            <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            <Loader2 size={14} className="animate-spin" />
           ) : (
             <Send size={16} />
           )}

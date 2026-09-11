@@ -105,7 +105,7 @@ export default function TransactionPage() {
   if (authLoading || transaction === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin text-[#0f2d6b]" size={32} />
+        <Loader2 className="animate-spin text-indigo-600" size={32} />
       </div>
     );
   }

@@ -3,10 +3,13 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { createAnnouncement } from "@/lib/announcements";
-import { ANNOUNCEMENT_CATEGORIES } from "@/lib/utils";
-import { X, Loader2, Upload, FileText } from "lucide-react";
+import { ANNOUNCEMENT_CATEGORIES, cn } from "@/lib/utils";
+import { Loader2, Upload, FileText, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { Timestamp } from "firebase/firestore";
+import Modal from "@/components/ui/Modal";
+import { Input, Textarea, Select } from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 
 interface CreateAnnouncementModalProps {
   onClose: () => void;
@@ -167,193 +170,167 @@ export default function CreateAnnouncementModal({
   const isBusy = loading || uploading;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+    <Modal
+      onClose={onClose}
+      title="Post Announcement"
+      description={
+        isModerator
+          ? "Your post will be published immediately."
+          : "Your post will be reviewed before publishing."
+      }
+    >
+      <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        {isModerator && (
           <div>
-            <h2 className="text-xl font-semibold text-slate-900" style={{ fontFamily: "var(--font-display)" }}>
-              Post Announcement
-            </h2>
-            <p className="text-sm text-slate-500 mt-0.5">
-              {isModerator
-                ? "Your post will be published immediately."
-                : "Your post will be reviewed before publishing."}
-            </p>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Post Type</label>
+            <div className="flex gap-3">
+              {["official", "student"].map((src) => (
+                <button
+                  key={src}
+                  type="button"
+                  onClick={() => setForm({ ...form, source: src })}
+                  className={cn(
+                    "flex-1 py-2.5 px-4 rounded-xl border-2 text-sm font-medium transition-all",
+                    form.source === src
+                      ? src === "official"
+                        ? "border-indigo-600 bg-indigo-600 text-white"
+                        : "border-slate-600 bg-slate-600 text-white"
+                      : "border-slate-200 text-slate-500 hover:border-slate-300"
+                  )}
+                >
+                  {src === "official" ? "🏛️ Official" : "🎓 Student"}
+                </button>
+              ))}
+            </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-          >
-            <X size={20} />
-          </button>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            Title <span className="text-red-500">*</span>
+          </label>
+          <Input
+            type="text"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            placeholder="e.g. End of Year Party at Block C!"
+            required
+          />
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {isModerator && (
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Post Type</label>
-              <div className="flex gap-3">
-                {["official", "student"].map((src) => (
-                  <button
-                    key={src}
-                    type="button"
-                    onClick={() => setForm({ ...form, source: src })}
-                    className={`flex-1 py-2.5 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
-                      form.source === src
-                        ? src === "official"
-                          ? "border-[#0f2d6b] bg-[#0f2d6b] text-white"
-                          : "border-slate-600 bg-slate-600 text-white"
-                        : "border-slate-200 text-slate-500 hover:border-slate-300"
-                    }`}
-                  >
-                    {src === "official" ? "🏛️ Official" : "🎓 Student"}
-                  </button>
-                ))}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Category</label>
+          <Select
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+          >
+            {ANNOUNCEMENT_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>{c.label}</option>
+            ))}
+          </Select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            Content <span className="text-red-500">*</span>
+          </label>
+          <Textarea
+            value={form.content}
+            onChange={(e) => setForm({ ...form, content: e.target.value })}
+            placeholder="Describe your announcement in detail..."
+            rows={5}
+            required
+          />
+        </div>
+
+        {/* Attachment upload */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            Attachment <span className="text-slate-400">(optional — photo or PDF, max {MAX_FILE_SIZE_MB}MB)</span>
+          </label>
+
+          {!file ? (
+            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-200 rounded-xl py-6 cursor-pointer hover:border-indigo-400 hover:bg-slate-50 transition-colors">
+              <Upload size={20} className="text-slate-400" />
+              <span className="text-xs text-slate-500">Click to upload a photo or PDF</span>
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
+          ) : (
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50">
+              {fileType === "image" && filePreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={filePreview} alt="Preview" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+              ) : (
+                <div className="w-12 h-12 rounded-lg bg-red-500 flex items-center justify-center shrink-0">
+                  <FileText size={20} className="text-white" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
+                <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
               </div>
+              <button
+                type="button"
+                onClick={removeFile}
+                className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+              >
+                <X size={16} />
+              </button>
             </div>
           )}
+        </div>
 
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Title <span className="text-red-500">*</span>
+              Event Date <span className="text-slate-400">(optional)</span>
             </label>
-            <input
+            <Input
+              type="datetime-local"
+              value={form.eventDate}
+              onChange={(e) => setForm({ ...form, eventDate: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Location <span className="text-slate-400">(optional)</span>
+            </label>
+            <Input
               type="text"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="e.g. End of Year Party at Block C!"
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/30 focus:border-[#0f2d6b] transition-all"
-              required
+              value={form.eventLocation}
+              onChange={(e) => setForm({ ...form, eventLocation: e.target.value })}
+              placeholder="e.g. Main Hall, Block A"
             />
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Category</label>
-            <select
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/30 focus:border-[#0f2d6b] bg-white"
-            >
-              {ANNOUNCEMENT_CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            Tags <span className="text-slate-400">(comma-separated)</span>
+          </label>
+          <Input
+            type="text"
+            value={form.tags}
+            onChange={(e) => setForm({ ...form, tags: e.target.value })}
+            placeholder="e.g. music, free entry, friday"
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Content <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={form.content}
-              onChange={(e) => setForm({ ...form, content: e.target.value })}
-              placeholder="Describe your announcement in detail..."
-              rows={5}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/30 focus:border-[#0f2d6b] resize-none transition-all"
-              required
-            />
-          </div>
-
-          {/* Attachment upload */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Attachment <span className="text-slate-400">(optional — photo or PDF, max {MAX_FILE_SIZE_MB}MB)</span>
-            </label>
-
-            {!file ? (
-              <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-200 rounded-xl py-6 cursor-pointer hover:border-[#0f2d6b]/40 hover:bg-slate-50 transition-colors">
-                <Upload size={20} className="text-slate-400" />
-                <span className="text-xs text-slate-500">Click to upload a photo or PDF</span>
-                <input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </label>
-            ) : (
-              <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50">
-                {fileType === "image" && filePreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={filePreview} alt="Preview" className="w-12 h-12 rounded-lg object-cover shrink-0" />
-                ) : (
-                  <div className="w-12 h-12 rounded-lg bg-red-500 flex items-center justify-center shrink-0">
-                    <FileText size={20} className="text-white" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
-                  <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={removeFile}
-                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Event Date <span className="text-slate-400">(optional)</span>
-              </label>
-              <input
-                type="datetime-local"
-                value={form.eventDate}
-                onChange={(e) => setForm({ ...form, eventDate: e.target.value })}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/30 focus:border-[#0f2d6b]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Location <span className="text-slate-400">(optional)</span>
-              </label>
-              <input
-                type="text"
-                value={form.eventLocation}
-                onChange={(e) => setForm({ ...form, eventLocation: e.target.value })}
-                placeholder="e.g. Main Hall, Block A"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/30 focus:border-[#0f2d6b]"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Tags <span className="text-slate-400">(comma-separated)</span>
-            </label>
-            <input
-              type="text"
-              value={form.tags}
-              onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              placeholder="e.g. music, free entry, friday"
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/30 focus:border-[#0f2d6b]"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isBusy}
-              className="flex-1 py-2.5 bg-[#0f2d6b] text-white rounded-xl text-sm font-medium hover:bg-[#1a3e8a] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-            >
-              {isBusy && <Loader2 size={15} className="animate-spin" />}
-              {uploading ? "Uploading..." : loading ? "Posting..." : isModerator ? "Post Now" : "Submit for Review"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex gap-3 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isBusy} className="flex-1">
+            {isBusy && <Loader2 size={15} className="animate-spin" />}
+            {uploading ? "Uploading..." : loading ? "Posting..." : isModerator ? "Post Now" : "Submit for Review"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

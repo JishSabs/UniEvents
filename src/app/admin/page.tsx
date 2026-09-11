@@ -20,16 +20,18 @@ import {
   Clock,
   LayoutDashboard,
   Shield,
-  Loader2,
   ChevronRight,
   CheckCircle,
-  XCircle,
   UserCog,
   ToggleLeft,
   ToggleRight,
   ShoppingBag,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
+import Spinner from "@/components/ui/Spinner";
+import EmptyState from "@/components/ui/EmptyState";
 
 type Tab = "overview" | "pending" | "users";
 
@@ -151,18 +153,15 @@ export default function AdminPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 bg-[#0f2d6b] rounded-xl flex items-center justify-center">
-            {isAdmin ? <Shield size={20} className="text-[#f5a623]" /> : <UserCog size={20} className="text-blue-300" />}
+          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+            {isAdmin ? <Shield size={20} className="text-white" /> : <UserCog size={20} className="text-white" />}
           </div>
-          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: "var(--font-display)" }}>
+          <h1 className="text-3xl font-bold text-slate-900">
             {isAdmin ? "Admin Panel" : "Moderation"}
           </h1>
         </div>
-        <p className="text-slate-500 text-sm ml-13">
-          Logged in as <span className={cn(
-            "font-medium px-2 py-0.5 rounded-full text-xs",
-            isAdmin ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
-          )}>{profile?.role}</span>
+        <p className="text-slate-500 text-sm ml-12">
+          Logged in as <Badge variant={isAdmin ? "danger" : "warning"}>{profile?.role}</Badge>
         </p>
       </div>
 
@@ -193,9 +192,9 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[
               { label: "Pending Review", value: pendingCount, icon: Clock, color: "text-amber-500 bg-amber-50", action: () => setTab("pending") },
-              { label: "Total Users", value: totalUserCount, icon: Users, color: "text-blue-500 bg-blue-50", action: isAdmin ? () => setTab("users") : undefined },
-              { label: "Active Listings", value: activeListingCount, icon: ShoppingBag, color: "text-teal-500 bg-teal-50" },
-              { label: "Approved Announcements", value: approvedAnnouncementCount, icon: Shield, color: "text-purple-500 bg-purple-50" },
+              { label: "Total Users", value: totalUserCount, icon: Users, color: "text-indigo-600 bg-indigo-50", action: isAdmin ? () => setTab("users") : undefined },
+              { label: "Active Listings", value: activeListingCount, icon: ShoppingBag, color: "text-slate-600 bg-slate-100" },
+              { label: "Approved Announcements", value: approvedAnnouncementCount, icon: Shield, color: "text-emerald-600 bg-emerald-50" },
             ].map(({ label, value, icon: Icon, color, action }) => (
               <button
                 key={label}
@@ -218,8 +217,8 @@ export default function AdminPage() {
             ))}
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 p-6">
-            <h2 className="font-semibold text-slate-900 mb-4" style={{ fontFamily: "var(--font-display)" }}>
+          <Card>
+            <h2 className="font-semibold text-slate-900 mb-4">
               Quick Actions
             </h2>
             <div className="flex flex-wrap gap-3">
@@ -232,13 +231,13 @@ export default function AdminPage() {
               {isAdmin && (
                 <button
                   onClick={() => setTab("users")}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-sm font-medium hover:bg-blue-100 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-sm font-medium hover:bg-indigo-100 transition-colors"
                 >
                   <UserCog size={14} /> Manage User Roles
                 </button>
               )}
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
@@ -247,14 +246,10 @@ export default function AdminPage() {
         <div>
           {loadingPending ? (
             <div className="flex justify-center py-20">
-              <Loader2 size={32} className="animate-spin text-[#0f2d6b]" />
+              <Spinner size={32} />
             </div>
           ) : pending.length === 0 ? (
-            <div className="text-center py-20">
-              <CheckCircle size={48} className="text-teal-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-slate-700">All clear!</h3>
-              <p className="text-slate-400 text-sm mt-1">No posts waiting for review.</p>
-            </div>
+            <EmptyState icon={CheckCircle} title="All clear!" description="No posts waiting for review." />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {pending.map((a) => (
@@ -277,7 +272,7 @@ export default function AdminPage() {
         <div>
           {loadingUsers ? (
             <div className="flex justify-center py-20">
-              <Loader2 size={32} className="animate-spin text-[#0f2d6b]" />
+              <Spinner size={32} />
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -297,7 +292,7 @@ export default function AdminPage() {
                       <tr key={u.uid} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 bg-[#0f2d6b] rounded-full flex items-center justify-center shrink-0">
+                            <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center shrink-0">
                               <span className="text-white text-sm font-bold">{u.displayName?.[0]?.toUpperCase()}</span>
                             </div>
                             <div>
@@ -317,7 +312,7 @@ export default function AdminPage() {
                               "text-xs px-3 py-1.5 rounded-full border font-medium cursor-pointer bg-white focus:outline-none",
                               u.role === "admin" ? "border-red-200 text-red-700 bg-red-50" :
                               u.role === "moderator" ? "border-amber-200 text-amber-700 bg-amber-50" :
-                              "border-blue-200 text-blue-700 bg-blue-50"
+                              "border-indigo-200 text-indigo-700 bg-indigo-50"
                             )}
                           >
                             <option value="student">student</option>
@@ -332,7 +327,7 @@ export default function AdminPage() {
                               className={cn(
                                 "flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors",
                                 u.isActive
-                                  ? "bg-teal-50 text-teal-700 hover:bg-teal-100"
+                                  ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                                   : "bg-red-50 text-red-600 hover:bg-red-100"
                               )}
                             >

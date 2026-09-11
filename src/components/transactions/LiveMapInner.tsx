@@ -32,8 +32,11 @@ function makeIcon(color: string) {
     iconAnchor: [11, 11],
   });
 }
-const buyerIcon = makeIcon("#0d9488");
-const sellerIcon = makeIcon("#834e35");
+const BUYER_MARKER_COLOR = "#4f46e5"; // indigo-600
+const SELLER_MARKER_COLOR = "#64748b"; // slate-500
+
+const buyerIcon = makeIcon(BUYER_MARKER_COLOR);
+const sellerIcon = makeIcon(SELLER_MARKER_COLOR);
 
 // --- Distance helper (haversine, km) ------------------------------------
 function distanceKm(a: Coords, b: Coords) {
@@ -112,7 +115,7 @@ export default function LiveMapInner({ buyer, seller, buyerName, sellerName }: L
               [buyer.lat, buyer.lng],
               [seller.lat, seller.lng],
             ]}
-            pathOptions={{ color: "#0f2d6b", weight: 3, dashArray: "6 8", opacity: 0.6 }}
+            pathOptions={{ color: BUYER_MARKER_COLOR, weight: 3, dashArray: "6 8", opacity: 0.6 }}
           />
         )}
 
@@ -136,13 +139,13 @@ export default function LiveMapInner({ buyer, seller, buyerName, sellerName }: L
       <div className="absolute top-3 left-3 bg-white/95 backdrop-blur rounded-xl shadow-md border border-slate-100 px-3 py-2 text-xs space-y-1.5 z-[1000]">
         {buyer && (
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#0d9488]" />
+            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: BUYER_MARKER_COLOR }} />
             <span className="text-slate-600 truncate max-w-[120px]">{buyerName}</span>
           </div>
         )}
         {seller && (
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#834e35]" />
+            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: SELLER_MARKER_COLOR }} />
             <span className="text-slate-600 truncate max-w-[120px]">{sellerName}</span>
           </div>
         )}
@@ -157,7 +160,7 @@ export default function LiveMapInner({ buyer, seller, buyerName, sellerName }: L
       {(buyer || seller) && (
         <button
           onClick={openDirections}
-          className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-[#0f2d6b] text-white text-xs font-medium px-3.5 py-2.5 rounded-full shadow-lg hover:bg-[#0f2d6b]/90 active:scale-95 transition z-[1000]"
+          className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-medium px-3.5 py-2.5 rounded-full shadow-lg hover:bg-indigo-700 active:scale-95 transition z-[1000]"
         >
           <Navigation size={14} />
           Get Directions

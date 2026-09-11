@@ -28,12 +28,12 @@ interface AnnouncementCardProps {
 
 const CATEGORY_COLORS: Record<string, string> = {
   academic: "bg-blue-100 text-blue-700",
-  event: "bg-purple-100 text-purple-700",
-  sports: "bg-green-100 text-green-700",
+  event: "bg-indigo-100 text-indigo-700",
+  sports: "bg-emerald-100 text-emerald-700",
   emergency: "bg-red-100 text-red-700",
   gig: "bg-orange-100 text-orange-700",
   party: "bg-pink-100 text-pink-700",
-  club: "bg-indigo-100 text-indigo-700",
+  club: "bg-purple-100 text-purple-700",
   general: "bg-slate-100 text-slate-600",
   other: "bg-slate-100 text-slate-600",
 };
@@ -69,8 +69,8 @@ export default function AnnouncementCard({
       )}
 
       {isOfficial && (
-        <div className="absolute -top-3 -left-3 z-10 w-9 h-9 rounded-full bg-[#0f2d6b] ring-2 ring-[#f5a623] shadow-md flex items-center justify-center">
-          <ShieldCheck size={16} className="text-[#f5a623]" />
+        <div className="absolute -top-3 -left-3 z-10 w-9 h-9 rounded-full bg-indigo-600 ring-2 ring-indigo-200 shadow-md flex items-center justify-center">
+          <ShieldCheck size={16} className="text-white" />
         </div>
       )}
 
@@ -78,19 +78,19 @@ export default function AnnouncementCard({
         className={cn(
           "bg-white rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5",
           isOfficial
-            ? "border-amber-200/70 shadow-[0_1px_3px_rgba(15,45,107,0.08)] hover:shadow-[0_8px_24px_rgba(15,45,107,0.14)]"
+            ? "border-indigo-200/70 shadow-sm hover:shadow-md"
             : "border-slate-200 shadow-sm hover:shadow-md"
         )}
       >
         <div
           className={cn(
             "px-4 py-2.5 flex items-center justify-between",
-            isOfficial ? "bg-[#0f2d6b] pl-9" : "bg-slate-700"
+            isOfficial ? "bg-indigo-600 pl-9" : "bg-slate-700"
           )}
         >
           <div className="flex items-center gap-2">
             {isOfficial ? (
-              <span className="text-[10px] font-bold text-[#f5a623] uppercase tracking-[0.12em]">
+              <span className="text-[10px] font-bold text-white uppercase tracking-[0.12em]">
                 Official University
               </span>
             ) : (
@@ -144,10 +144,7 @@ export default function AnnouncementCard({
             </a>
           )}
 
-          <h3
-            className="text-lg font-semibold text-slate-900 mb-2 leading-snug"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
+          <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-snug">
             {announcement.title}
           </h3>
 
@@ -159,13 +156,13 @@ export default function AnnouncementCard({
             <div className="flex flex-wrap gap-3 mb-4">
               {announcement.eventDate && (
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded-md">
-                  <Calendar size={12} className="text-[#0f2d6b]" />
+                  <Calendar size={12} className="text-indigo-600" />
                   {formatDate(announcement.eventDate)}
                 </div>
               )}
               {announcement.eventLocation && (
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded-md">
-                  <MapPin size={12} className="text-[#0f2d6b]" />
+                  <MapPin size={12} className="text-indigo-600" />
                   {announcement.eventLocation}
                 </div>
               )}

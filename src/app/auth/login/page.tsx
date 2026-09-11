@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import Card from "@/components/ui/Card";
+import AuthCardHeader from "@/components/ui/AuthCardHeader";
+import { Input } from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 
 export default function LoginPage() {
   const { signIn } = useAuth();
@@ -41,40 +45,30 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-slate-50">
       <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="bg-[#0f2d6b] px-8 py-10 text-center">
-            <div className="w-14 h-14 bg-[#f5a623] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-[#0f2d6b] text-2xl font-bold" style={{ fontFamily: "var(--font-display)" }}>U</span>
-            </div>
-            <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-display)" }}>
-              Welcome Back
-            </h1>
-            <p className="text-blue-300 text-sm mt-2">Sign in to your UniEvents account</p>
-          </div>
+        <Card padding="none" className="overflow-hidden">
+          <AuthCardHeader title="Welcome Back" subtitle="Sign in to your UniEvents account" />
 
           <form onSubmit={handleSubmit} className="p-8 space-y-5">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
-              <input
+              <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="student@university.ac.zw"
                 required
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b] transition-all"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
               <div className="relative">
-                <input
+                <Input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full px-4 py-3 pr-11 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b] transition-all"
+                  className="pr-11"
                 />
                 <button
                   type="button"
@@ -86,23 +80,19 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-[#0f2d6b] text-white rounded-xl font-medium hover:bg-[#1a3e8a] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-            >
+            <Button type="submit" disabled={loading} className="w-full">
               {loading && <Loader2 size={16} className="animate-spin" />}
               {loading ? "Signing in..." : "Sign In"}
-            </button>
+            </Button>
 
             <p className="text-center text-sm text-slate-500">
               Don&apos;t have an account?{" "}
-              <Link href="/auth/register" className="text-[#0f2d6b] font-medium hover:underline">
+              <Link href="/auth/register" className="text-indigo-600 font-medium hover:underline">
                 Register here
               </Link>
             </p>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );

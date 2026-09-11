@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import Card from "@/components/ui/Card";
+import AuthCardHeader from "@/components/ui/AuthCardHeader";
+import { Input } from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 
 export default function RegisterPage() {
   const { signUp } = useAuth();
@@ -53,51 +57,40 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-slate-50 py-12">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="bg-[#0f2d6b] px-8 py-10 text-center">
-            <div className="w-14 h-14 bg-[#f5a623] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-[#0f2d6b] text-2xl font-bold" style={{ fontFamily: "var(--font-display)" }}>U</span>
-            </div>
-            <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-display)" }}>
-              Join UniEvents
-            </h1>
-            <p className="text-blue-300 text-sm mt-2">Create your student account</p>
-          </div>
+        <Card padding="none" className="overflow-hidden">
+          <AuthCardHeader title="Join UniEvents" subtitle="Create your student account" />
 
           <form onSubmit={handleSubmit} className="p-8 space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
-              <input
+              <Input
                 type="text"
                 value={form.displayName}
                 onChange={(e) => setForm({ ...form, displayName: e.target.value })}
                 placeholder="Tariro Moyo"
                 required
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b]"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
-                <input
+                <Input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="you@uni.ac.zw"
                   required
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b]"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Student ID</label>
-                <input
+                <Input
                   type="text"
                   value={form.studentId}
                   onChange={(e) => setForm({ ...form, studentId: e.target.value })}
                   placeholder="R123456A"
                   required
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b]"
                 />
               </div>
             </div>
@@ -105,13 +98,13 @@ export default function RegisterPage() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
               <div className="relative">
-                <input
+                <Input
                   type={showPassword ? "text" : "password"}
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="Minimum 8 characters"
                   required
-                  className="w-full px-4 py-3 pr-11 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b]"
+                  className="pr-11"
                 />
                 <button
                   type="button"
@@ -125,33 +118,28 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Confirm Password</label>
-              <input
+              <Input
                 type="password"
                 value={form.confirmPassword}
                 onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
                 placeholder="Repeat your password"
                 required
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b]"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-[#0f2d6b] text-white rounded-xl font-medium hover:bg-[#1a3e8a] transition-colors disabled:opacity-60 flex items-center justify-center gap-2 mt-2"
-            >
+            <Button type="submit" disabled={loading} className="w-full mt-2">
               {loading && <Loader2 size={16} className="animate-spin" />}
               {loading ? "Creating account..." : "Create Account"}
-            </button>
+            </Button>
 
             <p className="text-center text-sm text-slate-500">
               Already have an account?{" "}
-              <Link href="/auth/login" className="text-[#0f2d6b] font-medium hover:underline">
+              <Link href="/auth/login" className="text-indigo-600 font-medium hover:underline">
                 Sign in
               </Link>
             </p>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );

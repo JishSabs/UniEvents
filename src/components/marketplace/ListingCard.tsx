@@ -31,7 +31,7 @@ interface ListingCardProps {
 
 const TYPE_CONFIG = {
   product: { label: "For Sale", icon: ShoppingBag, color: "bg-blue-500" },
-  service: { label: "Service", icon: Wrench, color: "bg-teal-500" },
+  service: { label: "Service", icon: Wrench, color: "bg-sky-500" },
   job: { label: "Hiring", icon: Briefcase, color: "bg-purple-500" },
   gig: { label: "Gig", icon: Star, color: "bg-orange-500" },
 };
@@ -134,14 +134,13 @@ export default function ListingCard({
       </div>
 
       <div className="p-2 sm:p-3.5 flex flex-col flex-1">
-        <h3 className="font-semibold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2 mb-1"
-          style={{ fontFamily: "var(--font-display)" }}>
+        <h3 className="font-semibold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2 mb-1">
           {listing.title}
         </h3>
 
         {listing.price !== undefined && (
           <div className="mb-1.5">
-            <span className="text-sm sm:text-lg font-bold text-[#0f2d6b]">
+            <span className="text-sm sm:text-lg font-bold text-indigo-600">
               {listing.priceType === "free"
                 ? "Free"
                 : formatPrice(listing.price, listing.currency)}
@@ -201,7 +200,7 @@ export default function ListingCard({
           <button
             onClick={handleStartTransaction}
             disabled={starting}
-            className="w-full flex items-center justify-center gap-1 py-1.5 sm:py-2 bg-[#0f2d6b] text-white rounded-lg text-[10px] sm:text-xs font-semibold hover:bg-[#1a3e8a] transition-colors disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-1 py-1.5 sm:py-2 bg-indigo-600 text-white rounded-lg text-[10px] sm:text-xs font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60"
           >
             <Navigation size={11} />
             {starting ? "Starting…" : "Start Transaction"}

@@ -8,9 +8,12 @@ import { MarketplaceListing, ListingType } from "@/types";
 import ListingCard from "@/components/marketplace/ListingCard";
 import CreateListingModal from "@/components/marketplace/CreateListingModal";
 import { MARKETPLACE_CATEGORIES, LISTING_TYPES, cn } from "@/lib/utils";
-import { Plus, Search, Loader2, ShoppingBag, Wrench, Briefcase, Star, Mail, ChevronDown } from "lucide-react";
+import { Plus, Search, ShoppingBag, Wrench, Briefcase, Star, Mail, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import Spinner from "@/components/ui/Spinner";
+import { Input, Select } from "@/components/ui/Input";
+import { buttonVariants } from "@/components/ui/Button";
 
 const TYPE_ICONS = {
   product: ShoppingBag,
@@ -129,22 +132,17 @@ function MarketplaceContent() {
     </div>
   )}
 
- {/* Color wash on top of the photos — lighter, and stronger at the edges/bottom where text sits */}
-  <div className="absolute inset-0 bg-gradient-to-br from-[#0d9488]/55 via-[#0f766e]/50 to-[#0f2d6b]/70" />
-  <div className="absolute inset-0 bg-gradient-to-t from-[#0f2d6b]/80 via-transparent to-transparent" />
-
-  <div className="absolute inset-0 opacity-10">
-    <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-white blur-3xl" />
-    <div className="absolute bottom-0 left-1/4 w-40 h-40 rounded-full bg-white blur-2xl" />
-  </div>
+ {/* Color wash on top of the photos — light scrim so heading text sits in dark slate, not white */}
+  <div className="absolute inset-0 bg-white/85" />
+  <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-white/40" />
 
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative">
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <p className="text-teal-100 text-xs font-semibold tracking-[0.2em] uppercase mb-2">
+        <p className="text-indigo-600 text-xs font-semibold tracking-[0.2em] uppercase mb-2">
           Campus Marketplace
         </p>
-        <h1 className="text-2xl sm:text-4xl font-bold text-white" style={{ fontFamily: "var(--font-display)" }}>
+        <h1 className="text-2xl sm:text-4xl font-bold text-slate-900">
           Buy, sell & hire<br className="hidden sm:block" /> within your community
         </h1>
       </div>
@@ -160,7 +158,7 @@ function MarketplaceContent() {
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-white text-[#0d9488] px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl font-semibold text-sm hover:bg-teal-50 transition-colors shrink-0 shadow-lg"
+            className={cn(buttonVariants({ variant: "primary" }), "rounded-2xl shadow-lg shrink-0")}
           >
             <Plus size={18} /> <span className="hidden xs:inline">Post Listing</span>
           </button>
@@ -174,24 +172,24 @@ function MarketplaceContent() {
           <div className="mt-6 sm:mt-8 bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2 shadow-xl max-w-2xl">
             <div className="relative flex-1">
               <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
+              <Input
                 type="text"
                 placeholder="Search for anything..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none"
+                className="pl-11 border-0 focus:ring-0"
               />
             </div>
-            <select
+            <Select
               value={filterCategory ?? ""}
               onChange={(e) => setFilterCategory(e.target.value || undefined)}
-              className="px-4 py-3 rounded-xl text-sm focus:outline-none bg-slate-50 text-slate-600 sm:w-44"
+              className="border-0 bg-slate-50 text-slate-600 sm:w-44"
             >
               <option value="">All Categories</option>
               {MARKETPLACE_CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
-            </select>
+            </Select>
           </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -203,11 +201,11 @@ function MarketplaceContent() {
           >
             <div className={cn(
               "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-lg sm:text-xl transition-all",
-              !filterCategory ? "bg-[#0d9488] shadow-md" : "bg-white border border-slate-200 group-hover:border-teal-300"
+              !filterCategory ? "bg-indigo-600 shadow-md" : "bg-white border border-slate-200 group-hover:border-indigo-300"
             )}>
               🗂️
             </div>
-            <span className={cn("text-[11px] font-medium", !filterCategory ? "text-[#0d9488]" : "text-slate-500")}>
+            <span className={cn("text-[11px] font-medium", !filterCategory ? "text-indigo-600" : "text-slate-500")}>
               All
             </span>
           </button>
@@ -219,11 +217,11 @@ function MarketplaceContent() {
             >
               <div className={cn(
                 "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-lg sm:text-xl transition-all",
-                filterCategory === c.value ? "bg-[#0d9488] shadow-md" : "bg-white border border-slate-200 group-hover:border-teal-300"
+                filterCategory === c.value ? "bg-indigo-600 shadow-md" : "bg-white border border-slate-200 group-hover:border-indigo-300"
               )}>
                 {CATEGORY_EMOJIS[c.value] ?? "🏷️"}
               </div>
-              <span className={cn("text-[11px] font-medium whitespace-nowrap", filterCategory === c.value ? "text-[#0d9488]" : "text-slate-500")}>
+              <span className={cn("text-[11px] font-medium whitespace-nowrap", filterCategory === c.value ? "text-indigo-600" : "text-slate-500")}>
                 {c.label}
               </span>
             </button>
@@ -236,7 +234,7 @@ function MarketplaceContent() {
             onClick={() => setFilterType(undefined)}
             className={cn(
               "px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors",
-              !filterType ? "bg-[#0f2d6b] text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              !filterType ? "bg-indigo-600 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
             )}
           >
             All Listings
@@ -250,7 +248,7 @@ function MarketplaceContent() {
                 className={cn(
                   "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors",
                   filterType === t.value
-                    ? "bg-[#0f2d6b] text-white"
+                    ? "bg-indigo-600 text-white"
                     : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                 )}
               >
@@ -273,10 +271,10 @@ function MarketplaceContent() {
         {/* Listings grid */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 size={32} className="animate-spin text-[#0d9488]" />
+            <Spinner size={32} />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+          <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-200">
             <p className="text-4xl mb-4">🛒</p>
             <h3 className="text-xl font-semibold text-slate-700 mb-2">Nothing here yet</h3>
             <p className="text-slate-400 text-sm">
@@ -326,7 +324,7 @@ export default function MarketplacePage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={32} className="animate-spin text-[#0d9488]" />
+        <Spinner size={32} />
       </div>
     }>
       <MarketplaceContent />

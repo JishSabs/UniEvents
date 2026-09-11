@@ -24,7 +24,7 @@ function formatTimestamp(date: Date) {
 }
 
 const AVATAR_COLORS = [
-  "bg-[#0f2d6b]/10 text-[#0f2d6b]",
+  "bg-indigo-50 text-indigo-700",
   "bg-teal-100 text-teal-700",
   "bg-amber-100 text-amber-700",
   "bg-rose-100 text-rose-700",
@@ -99,7 +99,7 @@ export default function Inbox() {
                 onClick={() => router.push(`/transactions/${it.id}`)}
                 className={`group p-3 rounded-2xl border cursor-pointer flex items-center gap-3 transition-all ${
                   isUnread
-                    ? "border-[#0f2d6b]/15 bg-[#0f2d6b]/[0.03] hover:bg-[#0f2d6b]/[0.06]"
+                    ? "border-indigo-200 bg-indigo-50/50 hover:bg-indigo-50"
                     : "border-slate-100 hover:bg-slate-50 hover:border-slate-200"
                 }`}
               >
@@ -116,7 +116,7 @@ export default function Inbox() {
                     <div className={`truncate ${isUnread ? "font-semibold text-slate-900" : "font-medium text-slate-700"}`}>
                       {it.listingTitle}
                     </div>
-                    <div className={`text-xs shrink-0 ${isUnread ? "text-[#0f2d6b] font-medium" : "text-slate-400"}`}>
+                    <div className={`text-xs shrink-0 ${isUnread ? "text-indigo-600 font-medium" : "text-slate-400"}`}>
                       {date ? formatTimestamp(date) : ""}
                     </div>
                   </div>
@@ -125,7 +125,7 @@ export default function Inbox() {
                       {it.lastMessage ?? "No messages yet"}
                     </div>
                     {isUnread ? (
-                      <span className="shrink-0 w-2.5 h-2.5 rounded-full bg-[#0f2d6b]" />
+                      <span className="shrink-0 w-2.5 h-2.5 rounded-full bg-indigo-600" />
                     ) : (
                       <ChevronRight size={16} className="shrink-0 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}

@@ -16,6 +16,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Badge from "@/components/ui/Badge";
 
 const navLinks = [
   { href: "/announcements", label: "Announcements", icon: Megaphone },
@@ -29,18 +30,17 @@ export default function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0f2d6b] shadow-lg">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-lg bg-[#f5a623] flex items-center justify-center">
-              <span className="text-[#0f2d6b] font-bold text-lg" style={{ fontFamily: "var(--font-display)" }}>
+            <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">
                 U
               </span>
             </div>
-            <span className="text-white font-semibold text-lg tracking-tight hidden sm:block"
-              style={{ fontFamily: "var(--font-display)" }}>
+            <span className="text-slate-900 font-semibold text-lg tracking-tight hidden sm:block">
               UniEvents
             </span>
           </Link>
@@ -54,8 +54,8 @@ export default function Navbar() {
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                   pathname.startsWith(href)
-                    ? "bg-white/20 text-white"
-                    : "text-blue-200 hover:bg-white/10 hover:text-white"
+                    ? "bg-indigo-50 text-indigo-700"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 )}
               >
                 <Icon size={16} />
@@ -68,8 +68,8 @@ export default function Navbar() {
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                   pathname.startsWith("/admin")
-                    ? "bg-[#f5a623] text-[#0f2d6b]"
-                    : "text-blue-200 hover:bg-white/10 hover:text-white"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 )}
               >
                 <LayoutDashboard size={16} />
@@ -82,23 +82,23 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {user ? (
               <>
-                <button className="relative p-2 text-blue-200 hover:text-white transition-colors">
+                <button className="relative p-2 text-slate-500 hover:text-slate-900 transition-colors">
                   <Bell size={18} />
                 </button>
                 <div className="relative">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                    className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
                   >
-                    <div className="w-7 h-7 rounded-full bg-[#f5a623] flex items-center justify-center">
-                      <span className="text-[#0f2d6b] text-xs font-bold">
+                    <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">
                         {profile?.displayName?.[0]?.toUpperCase() ?? "U"}
                       </span>
                     </div>
-                    <span className="text-white text-sm hidden sm:block max-w-24 truncate">
+                    <span className="text-slate-700 text-sm hidden sm:block max-w-24 truncate">
                       {profile?.displayName}
                     </span>
-                    <ChevronDown size={14} className="text-blue-200" />
+                    <ChevronDown size={14} className="text-slate-400" />
                   </button>
 
                   {userMenuOpen && (
@@ -106,14 +106,16 @@ export default function Navbar() {
                       <div className="px-4 py-2 border-b border-slate-100">
                         <p className="text-xs text-slate-500">Signed in as</p>
                         <p className="text-sm font-medium text-slate-900 truncate">{profile?.email}</p>
-                        <span className={cn(
-                          "inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium",
-                          profile?.role === "admin" ? "bg-red-100 text-red-700" :
-                          profile?.role === "moderator" ? "bg-amber-100 text-amber-700" :
-                          "bg-blue-100 text-blue-700"
-                        )}>
+                        <Badge
+                          variant={
+                            profile?.role === "admin" ? "danger" :
+                            profile?.role === "moderator" ? "warning" :
+                            "accent"
+                          }
+                          className="mt-1"
+                        >
                           {profile?.role}
-                        </span>
+                        </Badge>
                       </div>
                       <Link
                         href="/profile"
@@ -134,12 +136,12 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/auth/login" className="text-blue-200 hover:text-white text-sm font-medium px-3 py-1.5">
+                <Link href="/auth/login" className="text-slate-600 hover:text-slate-900 text-sm font-medium px-3 py-1.5">
                   Sign In
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="bg-[#f5a623] text-[#0f2d6b] text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-amber-400 transition-colors"
+                  className="bg-indigo-600 text-white text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                   Join
                 </Link>
@@ -149,7 +151,7 @@ export default function Navbar() {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 text-blue-200 hover:text-white"
+              className="md:hidden p-2 text-slate-500 hover:text-slate-900"
             >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -159,13 +161,13 @@ export default function Navbar() {
 
       {/* Mobile nav */}
       {mobileOpen && (
-        <div className="md:hidden bg-[#0a2158] border-t border-white/10 px-4 py-3 space-y-1">
+        <div className="md:hidden bg-white border-t border-slate-100 px-4 py-3 space-y-1">
           {navLinks.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-white/10 hover:text-white text-sm"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-sm"
             >
               <Icon size={16} /> {label}
             </Link>
@@ -174,7 +176,7 @@ export default function Navbar() {
             <Link
               href="/admin"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-amber-300 hover:bg-white/10 text-sm"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-indigo-600 hover:bg-indigo-50 text-sm"
             >
               <LayoutDashboard size={16} /> {isAdmin ? "Admin Panel" : "Moderation"}
             </Link>

@@ -1,33 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-display: 'DM Serif Display', serif;
-  --font-body: 'DM Sans', sans-serif;
-  --navy: #0f2d6b;
-  --gold: #f5a623;
-  --teal: #0d9488;
-}
-
 * { box-sizing: border-box; }
 
 body {
-  font-family: var(--font-body);
-  background-color: #f8fafc;
-  color: #0f172a;
-}
-
-h1, h2, h3 {
-  font-family: var(--font-display);
+  @apply bg-slate-50 text-slate-900;
 }
 
 /* Badge pulse for official */
 @keyframes badge-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(245,166,35,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgb(79 70 229 / 0.35); }
+  50% { box-shadow: 0 0 0 6px rgb(79 70 229 / 0); }
 }
 .badge-official { animation: badge-pulse 2.5s infinite; }
 
@@ -37,7 +21,7 @@ h1, h2, h3 {
 }
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(15,45,107,0.12);
+  box-shadow: 0 8px 30px rgba(15,23,42,0.10);
 }
 
 /* Scrollbar */

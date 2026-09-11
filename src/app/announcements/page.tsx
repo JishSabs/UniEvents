@@ -14,9 +14,13 @@ import { Announcement, AnnouncementSource, AnnouncementCategory } from "@/types"
 import AnnouncementCard from "@/components/announcements/AnnouncementCard";
 import CreateAnnouncementModal from "@/components/announcements/CreateAnnouncementModal";
 import { ANNOUNCEMENT_CATEGORIES } from "@/lib/utils";
-import { Plus, Filter, Loader2, Search } from "lucide-react";
+import { Plus, Filter, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
+import Card from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { buttonVariants } from "@/components/ui/Button";
+import Spinner from "@/components/ui/Spinner";
 
 function AnnouncementsContent() {
   const { user, isModerator, loading: authLoading } = useAuth();
@@ -98,7 +102,7 @@ function AnnouncementsContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: "var(--font-display)" }}>
+          <h1 className="text-3xl font-bold text-slate-900">
             Announcements
           </h1>
           <p className="text-slate-500 mt-1 text-sm">
@@ -108,7 +112,7 @@ function AnnouncementsContent() {
         {user && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-[#0f2d6b] text-white px-5 py-2.5 rounded-xl font-medium text-sm hover:bg-[#1a3e8a] transition-colors shrink-0"
+            className={cn(buttonVariants({ variant: "primary" }), "shrink-0")}
           >
             <Plus size={16} /> Post Announcement
           </button>
@@ -116,16 +120,16 @@ function AnnouncementsContent() {
       </div>
 
      {/* Filters */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-8 flex flex-col sm:flex-row gap-4 shadow-sm">
+      <Card padding="sm" className="mb-8 flex flex-col sm:flex-row gap-4">
         {/* Search */}
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
+          <Input
             type="text"
             placeholder="Search announcements..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f2d6b]/20 focus:border-[#0f2d6b] transition-shadow"
+            className="pl-10"
           />
         </div>
 
@@ -140,7 +144,7 @@ function AnnouncementsContent() {
                 "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
                 (src === "all" ? !filterSource : filterSource === src)
                   ? src === "official"
-                    ? "bg-[#0f2d6b] text-white shadow-sm"
+                    ? "bg-indigo-600 text-white shadow-sm"
                     : src === "student"
                     ? "bg-slate-700 text-white shadow-sm"
                     : "bg-slate-900 text-white shadow-sm"
@@ -151,7 +155,7 @@ function AnnouncementsContent() {
             </button>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* Category chips */}
       <div className="flex flex-wrap gap-2 mb-8">
@@ -159,7 +163,7 @@ function AnnouncementsContent() {
           onClick={() => setFilterCategory(undefined)}
           className={cn(
             "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
-            !filterCategory ? "bg-[#0f2d6b] text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+            !filterCategory ? "bg-indigo-600 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
           )}
         >
           All Categories
@@ -171,7 +175,7 @@ function AnnouncementsContent() {
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
               filterCategory === c.value
-                ? "bg-[#0f2d6b] text-white"
+                ? "bg-indigo-600 text-white"
                 : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
             )}
           >
@@ -183,7 +187,7 @@ function AnnouncementsContent() {
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 size={32} className="animate-spin text-[#0f2d6b]" />
+          <Spinner size={32} />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">
@@ -223,7 +227,7 @@ export default function AnnouncementsPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={32} className="animate-spin text-[#0f2d6b]" />
+        <Spinner size={32} />
       </div>
     }>
       <AnnouncementsContent />
