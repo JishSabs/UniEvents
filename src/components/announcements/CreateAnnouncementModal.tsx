@@ -193,7 +193,7 @@ export default function CreateAnnouncementModal({
                     "flex-1 py-2.5 px-4 rounded-xl border-2 text-sm font-medium transition-all",
                     form.source === src
                       ? src === "official"
-                        ? "border-indigo-600 bg-indigo-600 text-white"
+                        ? "border-cyan-600 bg-cyan-600 text-white"
                         : "border-slate-600 bg-slate-600 text-white"
                       : "border-slate-200 text-slate-500 hover:border-slate-300"
                   )}
@@ -250,7 +250,7 @@ export default function CreateAnnouncementModal({
           </label>
 
           {!file ? (
-            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-200 rounded-xl py-6 cursor-pointer hover:border-indigo-400 hover:bg-slate-50 transition-colors">
+            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-200 rounded-xl py-6 cursor-pointer hover:border-cyan-400 hover:bg-slate-50 transition-colors">
               <Upload size={20} className="text-slate-400" />
               <span className="text-xs text-slate-500">Click to upload a photo or PDF</span>
               <input
@@ -285,7 +285,7 @@ export default function CreateAnnouncementModal({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Event Date <span className="text-slate-400">(optional)</span>

@@ -14,13 +14,14 @@ import { Announcement, AnnouncementSource, AnnouncementCategory } from "@/types"
 import AnnouncementCard from "@/components/announcements/AnnouncementCard";
 import CreateAnnouncementModal from "@/components/announcements/CreateAnnouncementModal";
 import { ANNOUNCEMENT_CATEGORIES } from "@/lib/utils";
-import { Plus, Filter, Search } from "lucide-react";
+import { Plus, Filter, Search, Landmark, Megaphone } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import Card from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { buttonVariants } from "@/components/ui/Button";
 import Spinner from "@/components/ui/Spinner";
+import EmptyState from "@/components/ui/EmptyState";
 
 function AnnouncementsContent() {
   const { user, isModerator, loading: authLoading } = useAuth();
@@ -101,13 +102,18 @@ function AnnouncementsContent() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">
-            Announcements
-          </h1>
-          <p className="text-slate-500 mt-1 text-sm">
-            Official notices and student posts from across campus
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-cyan-600 shadow-sm shadow-cyan-600/20 flex items-center justify-center shrink-0">
+            <Landmark size={20} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">
+              Announcements
+            </h1>
+            <p className="text-slate-500 mt-1 text-sm">
+              Official notices and student posts from across campus
+            </p>
+          </div>
         </div>
         {user && (
           <button
@@ -144,7 +150,7 @@ function AnnouncementsContent() {
                 "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
                 (src === "all" ? !filterSource : filterSource === src)
                   ? src === "official"
-                    ? "bg-indigo-600 text-white shadow-sm"
+                    ? "bg-gradient-to-r from-cyan-500 to-cyan-700 text-white shadow-sm"
                     : src === "student"
                     ? "bg-slate-700 text-white shadow-sm"
                     : "bg-slate-900 text-white shadow-sm"
@@ -163,7 +169,7 @@ function AnnouncementsContent() {
           onClick={() => setFilterCategory(undefined)}
           className={cn(
             "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
-            !filterCategory ? "bg-indigo-600 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+            !filterCategory ? "bg-cyan-600 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
           )}
         >
           All Categories
@@ -175,7 +181,7 @@ function AnnouncementsContent() {
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
               filterCategory === c.value
-                ? "bg-indigo-600 text-white"
+                ? "bg-cyan-600 text-white"
                 : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
             )}
           >
@@ -190,13 +196,11 @@ function AnnouncementsContent() {
           <Spinner size={32} />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-4xl mb-4">📢</p>
-          <h3 className="text-xl font-semibold text-slate-700 mb-2">No announcements yet</h3>
-          <p className="text-slate-400 text-sm">
-            {search ? "Try a different search term." : "Check back soon or be the first to post!"}
-          </p>
-        </div>
+        <EmptyState
+          icon={Megaphone}
+          title="No announcements yet"
+          description={search ? "Try a different search term." : "Check back soon or be the first to post!"}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((announcement) => (

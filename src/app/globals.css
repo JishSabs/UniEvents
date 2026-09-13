@@ -10,18 +10,24 @@ body {
 
 /* Badge pulse for official */
 @keyframes badge-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(79 70 229 / 0.35); }
-  50% { box-shadow: 0 0 0 6px rgb(79 70 229 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgb(8 145 178 / 0.35); }
+  50% { box-shadow: 0 0 0 6px rgb(8 145 178 / 0); }
 }
 .badge-official { animation: badge-pulse 2.5s infinite; }
 
 /* Card hover lift */
 .card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(15,23,42,0.10);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(15,23,42,0.10);
+  border-color: rgb(165 243 252);
+}
+
+/* Soft radial wash used behind hero/section headers for a premium feel */
+.premium-glow {
+  background-image: radial-gradient(60% 60% at 50% 0%, rgb(236 254 255 / 0.9), transparent 70%);
 }
 
 /* Scrollbar */

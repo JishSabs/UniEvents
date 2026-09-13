@@ -23,10 +23,17 @@ import {
   getDoc,
   setDoc,
   serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { setMyPresence, clearMyPresence } from "@/lib/presence";
 import { UserProfile, UserRole } from "@/types";
+
+// Local-only escape hatch for viewing pages without a real Firebase backend.
+// Set NEXT_PUBLIC_PREVIEW_MODE=true in .env.local (never commit it) to sign
+// in as a fake user automatically. Leave unset/false for real behavior.
+const PREVIEW_MODE = process.env.NEXT_PUBLIC_PREVIEW_MODE === "true";
+const PREVIEW_ROLE = (process.env.NEXT_PUBLIC_PREVIEW_ROLE as UserRole) || "admin";
 
 interface AuthContextType {
   user: User | null;
@@ -98,6 +105,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    if (PREVIEW_MODE) {
+      const previewProfile: UserProfile = {
+        uid: "preview-user",
+        email: "preview@university.ac.zw",
+        displayName: "Preview User",
+        role: PREVIEW_ROLE,
+        studentId: "P000000",
+        isActive: true,
+        createdAt: Timestamp.now(),
+      };
+      setUser({ uid: "preview-user", email: previewProfile.email } as unknown as User);
+      setProfile(previewProfile);
+      setLoading(false);
+      return;
+    }
+
     if (!auth || !db) {
       setLoading(false);
       return;
@@ -259,6 +282,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    if (PREVIEW_MODE) {
+      setUser(null);
+      setProfile(null);
+      return;
+    }
     await signOut(auth);
     setProfile(null);
     if (typeof window !== "undefined") {

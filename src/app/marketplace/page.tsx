@@ -9,11 +9,11 @@ import ListingCard from "@/components/marketplace/ListingCard";
 import CreateListingModal from "@/components/marketplace/CreateListingModal";
 import { MARKETPLACE_CATEGORIES, LISTING_TYPES, cn } from "@/lib/utils";
 import { Plus, Search, ShoppingBag, Wrench, Briefcase, Star, Mail, ChevronDown } from "lucide-react";
-import Image from "next/image";
 import toast from "react-hot-toast";
 import Spinner from "@/components/ui/Spinner";
-import { Input, Select } from "@/components/ui/Input";
+import { Input } from "@/components/ui/Input";
 import { buttonVariants } from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
 
 const TYPE_ICONS = {
   product: ShoppingBag,
@@ -42,10 +42,6 @@ function MarketplaceContent() {
   const searchParams = useSearchParams();
 
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
-  const marqueeImages = listings
-    .flatMap((l) => l.imageURLs)
-    .filter(Boolean)
-    .slice(0, 14);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filterType, setFilterType] = useState<ListingType | undefined>(
@@ -104,94 +100,48 @@ function MarketplaceContent() {
 
   return (
     <div className="bg-slate-50 min-h-screen">
-     {/* Hero */}
-<div className="relative overflow-hidden">
-  {/* Sliding product photos backdrop */}
-  {listings.length > 0 && (
-    <div className="absolute inset-0 flex flex-col justify-between py-2 opacity-30">
-      <div className="flex gap-3 animate-marquee-left w-max">
-        {[...marqueeImages, ...marqueeImages].map((src, i) => (
-          <div
-            key={`row1-${i}`}
-            className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden shrink-0 grayscale"
-          >
-            <Image src={src} alt="" fill className="object-cover" />
-          </div>
-        ))}
-      </div>
-      <div className="flex gap-3 animate-marquee-right w-max">
-        {[...marqueeImages].reverse().concat([...marqueeImages].reverse()).map((src, i) => (
-          <div
-            key={`row2-${i}`}
-            className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden shrink-0 grayscale"
-          >
-            <Image src={src} alt="" fill className="object-cover" />
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
-
- {/* Color wash on top of the photos — light scrim so heading text sits in dark slate, not white */}
-  <div className="absolute inset-0 bg-white/85" />
-  <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-white/40" />
-
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative">
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <p className="text-indigo-600 text-xs font-semibold tracking-[0.2em] uppercase mb-2">
-          Campus Marketplace
-        </p>
-        <h1 className="text-2xl sm:text-4xl font-bold text-slate-900">
-          Buy, sell & hire<br className="hidden sm:block" /> within your community
-        </h1>
-      </div>
-      {user && (
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={() => router.push("/inbox")}
-            className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shrink-0"
-            title="Inbox"
-          >
-            <Mail size={18} />
-          </button>
-
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className={cn(buttonVariants({ variant: "primary" }), "rounded-2xl shadow-lg shrink-0")}
-          >
-            <Plus size={18} /> <span className="hidden xs:inline">Post Listing</span>
-          </button>
-        </div>
-      )}
-    </div>
-  </div>
-</div>
-
-          {/* Search bar sits on the banner */}
-          <div className="mt-6 sm:mt-8 bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2 shadow-xl max-w-2xl">
-            <div className="relative flex-1">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-              <Input
-                type="text"
-                placeholder="Search for anything..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-11 border-0 focus:ring-0"
-              />
+      {/* Clean header */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Marketplace</h1>
+              <p className="text-sm text-slate-500 mt-0.5">Buy, sell & hire within your community</p>
             </div>
-            <Select
-              value={filterCategory ?? ""}
-              onChange={(e) => setFilterCategory(e.target.value || undefined)}
-              className="border-0 bg-slate-50 text-slate-600 sm:w-44"
-            >
-              <option value="">All Categories</option>
-              {MARKETPLACE_CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </Select>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="relative flex-1 sm:w-72">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Input
+                  type="text"
+                  placeholder="Search product..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              {user && (
+                <>
+                  <button
+                    onClick={() => router.push("/inbox")}
+                    className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shrink-0"
+                    title="Inbox"
+                  >
+                    <Mail size={18} />
+                  </button>
+
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className={cn(buttonVariants({ variant: "primary" }), "shrink-0")}
+                  >
+                    <Plus size={18} /> <span className="hidden xs:inline">Post Listing</span>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-      
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Category icon strip */}
         <div className="flex gap-3 overflow-x-auto pb-2 mb-5 -mx-1 px-1 scrollbar-hide">
@@ -201,11 +151,11 @@ function MarketplaceContent() {
           >
             <div className={cn(
               "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-lg sm:text-xl transition-all",
-              !filterCategory ? "bg-indigo-600 shadow-md" : "bg-white border border-slate-200 group-hover:border-indigo-300"
+              !filterCategory ? "bg-cyan-600 shadow-md shadow-cyan-600/25" : "bg-white border border-slate-200 group-hover:border-cyan-300 group-hover:shadow-sm"
             )}>
               🗂️
             </div>
-            <span className={cn("text-[11px] font-medium", !filterCategory ? "text-indigo-600" : "text-slate-500")}>
+            <span className={cn("text-[11px] font-medium", !filterCategory ? "text-cyan-600" : "text-slate-500")}>
               All
             </span>
           </button>
@@ -217,11 +167,11 @@ function MarketplaceContent() {
             >
               <div className={cn(
                 "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-lg sm:text-xl transition-all",
-                filterCategory === c.value ? "bg-indigo-600 shadow-md" : "bg-white border border-slate-200 group-hover:border-indigo-300"
+                filterCategory === c.value ? "bg-cyan-600 shadow-md shadow-cyan-600/25" : "bg-white border border-slate-200 group-hover:border-cyan-300 group-hover:shadow-sm"
               )}>
                 {CATEGORY_EMOJIS[c.value] ?? "🏷️"}
               </div>
-              <span className={cn("text-[11px] font-medium whitespace-nowrap", filterCategory === c.value ? "text-indigo-600" : "text-slate-500")}>
+              <span className={cn("text-[11px] font-medium whitespace-nowrap", filterCategory === c.value ? "text-cyan-600" : "text-slate-500")}>
                 {c.label}
               </span>
             </button>
@@ -234,7 +184,7 @@ function MarketplaceContent() {
             onClick={() => setFilterType(undefined)}
             className={cn(
               "px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors",
-              !filterType ? "bg-indigo-600 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              !filterType ? "bg-cyan-600 text-white shadow-sm" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
             )}
           >
             All Listings
@@ -248,7 +198,7 @@ function MarketplaceContent() {
                 className={cn(
                   "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors",
                   filterType === t.value
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-cyan-600 text-white shadow-sm"
                     : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                 )}
               >
@@ -274,13 +224,12 @@ function MarketplaceContent() {
             <Spinner size={32} />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-200">
-            <p className="text-4xl mb-4">🛒</p>
-            <h3 className="text-xl font-semibold text-slate-700 mb-2">Nothing here yet</h3>
-            <p className="text-slate-400 text-sm">
-              {search ? "Try a different search term." : "Be the first to post a listing!"}
-            </p>
-          </div>
+          <EmptyState
+            icon={ShoppingBag}
+            title="Nothing here yet"
+            description={search ? "Try a different search term." : "Be the first to post a listing!"}
+            className="bg-white"
+          />
         ) : (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">

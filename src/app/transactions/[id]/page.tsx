@@ -105,7 +105,7 @@ export default function TransactionPage() {
   if (authLoading || transaction === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin text-indigo-600" size={32} />
+        <Loader2 className="animate-spin text-cyan-600" size={32} />
       </div>
     );
   }
@@ -147,15 +147,15 @@ export default function TransactionPage() {
         <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
             <h1 className="text-lg font-semibold text-slate-900">{transaction.listingTitle}</h1>
-            <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-2">
-              <span className="flex items-center gap-2">
-                <span className={`inline-block w-2 h-2 rounded-full ${buyerOnline ? 'bg-emerald-400' : 'bg-slate-300'}`} />
-                <span>{transaction.buyerName} (buyer)</span>
+            <p className="text-sm text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="flex items-center gap-2 min-w-0">
+                <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${buyerOnline ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+                <span className="truncate">{transaction.buyerName} (buyer)</span>
               </span>
-              <span>↔</span>
-              <span className="flex items-center gap-2">
-                <span className={`inline-block w-2 h-2 rounded-full ${sellerOnline ? 'bg-emerald-400' : 'bg-slate-300'}`} />
-                <span>{transaction.sellerName} (seller)</span>
+              <span className="hidden sm:inline">↔</span>
+              <span className="flex items-center gap-2 min-w-0">
+                <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${sellerOnline ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+                <span className="truncate">{transaction.sellerName} (seller)</span>
               </span>
             </p>
           </div>

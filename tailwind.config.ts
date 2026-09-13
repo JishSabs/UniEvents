@@ -10,6 +10,9 @@ module.exports = {
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
+      screens: {
+        xs: "475px",
+      },
     },
   },
   plugins: [],

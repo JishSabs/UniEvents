@@ -7,5 +7,5 @@ interface SpinnerProps {
 }
 
 export default function Spinner({ size = 24, className }: SpinnerProps) {
-  return <Loader2 size={size} className={cn("animate-spin text-indigo-600", className)} />;
+  return <Loader2 size={size} className={cn("animate-spin text-cyan-600", className)} />;
 }

@@ -153,7 +153,7 @@ export default function AdminPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-cyan-600 rounded-xl flex items-center justify-center">
             {isAdmin ? <Shield size={20} className="text-white" /> : <UserCog size={20} className="text-white" />}
           </div>
           <h1 className="text-3xl font-bold text-slate-900">
@@ -166,24 +166,26 @@ export default function AdminPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl mb-8 w-fit">
-        {TABS.map(({ id, label, icon: Icon, badge }) => (
-          <button
-            key={id}
-            onClick={() => setTab(id)}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors relative",
-              tab === id ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
-            )}
-          >
-            <Icon size={15} /> {label}
-            {badge !== undefined && badge > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                {badge}
-              </span>
-            )}
-          </button>
-        ))}
+      <div className="mb-8 overflow-x-auto">
+        <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit min-w-full sm:min-w-0">
+          {TABS.map(({ id, label, icon: Icon, badge }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors relative whitespace-nowrap shrink-0",
+                tab === id ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              )}
+            >
+              <Icon size={15} /> {label}
+              {badge !== undefined && badge > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                  {badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Overview */}
@@ -192,7 +194,7 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[
               { label: "Pending Review", value: pendingCount, icon: Clock, color: "text-amber-500 bg-amber-50", action: () => setTab("pending") },
-              { label: "Total Users", value: totalUserCount, icon: Users, color: "text-indigo-600 bg-indigo-50", action: isAdmin ? () => setTab("users") : undefined },
+              { label: "Total Users", value: totalUserCount, icon: Users, color: "text-cyan-600 bg-cyan-50", action: isAdmin ? () => setTab("users") : undefined },
               { label: "Active Listings", value: activeListingCount, icon: ShoppingBag, color: "text-slate-600 bg-slate-100" },
               { label: "Approved Announcements", value: approvedAnnouncementCount, icon: Shield, color: "text-emerald-600 bg-emerald-50" },
             ].map(({ label, value, icon: Icon, color, action }) => (
@@ -231,7 +233,7 @@ export default function AdminPage() {
               {isAdmin && (
                 <button
                   onClick={() => setTab("users")}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-sm font-medium hover:bg-indigo-100 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-xl text-sm font-medium hover:bg-cyan-100 transition-colors"
                 >
                   <UserCog size={14} /> Manage User Roles
                 </button>
@@ -292,7 +294,7 @@ export default function AdminPage() {
                       <tr key={u.uid} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center shrink-0">
+                            <div className="w-9 h-9 bg-cyan-600 rounded-full flex items-center justify-center shrink-0">
                               <span className="text-white text-sm font-bold">{u.displayName?.[0]?.toUpperCase()}</span>
                             </div>
                             <div>
@@ -312,7 +314,7 @@ export default function AdminPage() {
                               "text-xs px-3 py-1.5 rounded-full border font-medium cursor-pointer bg-white focus:outline-none",
                               u.role === "admin" ? "border-red-200 text-red-700 bg-red-50" :
                               u.role === "moderator" ? "border-amber-200 text-amber-700 bg-amber-50" :
-                              "border-indigo-200 text-indigo-700 bg-indigo-50"
+                              "border-cyan-200 text-cyan-700 bg-cyan-50"
                             )}
                           >
                             <option value="student">student</option>

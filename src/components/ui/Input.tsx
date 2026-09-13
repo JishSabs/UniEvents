@@ -2,7 +2,7 @@ import { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, forw
 import { cn } from "@/lib/utils";
 
 const fieldBase =
-  "w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all disabled:bg-slate-50 disabled:text-slate-400";
+  "w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-600 transition-all disabled:bg-slate-50 disabled:text-slate-400";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;

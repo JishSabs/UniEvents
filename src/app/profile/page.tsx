@@ -70,7 +70,7 @@ export default function ProfilePage() {
       <div className="grid gap-6 lg:grid-cols-[1.5fr_2fr]">
         <Card>
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-16 h-16 rounded-2xl bg-cyan-600 flex items-center justify-center text-white text-2xl font-bold">
               {profile.displayName?.[0]?.toUpperCase() ?? "U"}
             </div>
             <div>

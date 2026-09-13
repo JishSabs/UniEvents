@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { Megaphone, ShoppingBag, Shield, Users, ArrowRight, GraduationCap, Sparkles } from "lucide-react";
+import { Megaphone, ShoppingBag, Shield, Users, ArrowRight, GraduationCap, Sparkles, ShieldCheck, BadgeCheck, Landmark, Presentation, Check } from "lucide-react";
 import Card from "@/components/ui/Card";
 import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import Footer from "@/components/layout/Footer";
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -13,7 +14,7 @@ export default function HomePage() {
   const features = [
     {
       icon: Shield,
-      color: "bg-indigo-600",
+      color: "bg-gradient-to-br from-cyan-500 to-cyan-700",
       iconColor: "text-white",
       title: "Official Announcements",
       desc: "Important notices directly from the university — exam schedules, fee deadlines, policy updates.",
@@ -29,7 +30,7 @@ export default function HomePage() {
     },
     {
       icon: ShoppingBag,
-      color: "bg-indigo-600",
+      color: "bg-cyan-600",
       iconColor: "text-white",
       title: "Marketplace",
       desc: "Buy textbooks, find tutors, sell clothes, or offer your skills to the campus community.",
@@ -45,40 +46,69 @@ export default function HomePage() {
     },
   ];
 
+  const trustPoints = [
+    { icon: BadgeCheck, label: "Verified student accounts" },
+    { icon: ShieldCheck, label: "Moderated for quality & safety" },
+    { icon: Landmark, label: "Official university announcements" },
+  ];
+
+  const audiences = [
+    {
+      icon: GraduationCap,
+      title: "For Students",
+      desc: "Everything you need to make the most of campus life, in one place.",
+      points: [
+        "Buy, sell & hire within your own campus community",
+        "Never miss a party, gig, or club event again",
+        "One inbox for every marketplace chat",
+      ],
+    },
+    {
+      icon: Presentation,
+      title: "For Faculty & Staff",
+      desc: "A trusted, direct line to every student — no noise, no chasing group chats.",
+      points: [
+        "Official posts get a distinct verified seal",
+        "Reach the whole student body instantly",
+        "Built-in moderation keeps every post on-brand",
+      ],
+    },
+  ];
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="bg-white text-slate-900 pt-20 pb-32 px-4 relative overflow-hidden border-b border-slate-100">
+      <section className="bg-white text-slate-900 pt-20 pb-32 px-4 relative overflow-hidden border-b border-slate-100 premium-glow">
         {/* Hub-and-spoke backdrop — the four campus areas radiating from the headline */}
         <svg
           className="absolute inset-0 w-full h-full opacity-[0.08] pointer-events-none"
           viewBox="0 0 800 500"
           preserveAspectRatio="xMidYMid slice"
         >
-          <line x1="400" y1="180" x2="120" y2="60" stroke="#4f46e5" strokeWidth="1" />
-          <line x1="400" y1="180" x2="680" y2="60" stroke="#4f46e5" strokeWidth="1" />
+          <line x1="400" y1="180" x2="120" y2="60" stroke="#0891b2" strokeWidth="1" />
+          <line x1="400" y1="180" x2="680" y2="60" stroke="#0891b2" strokeWidth="1" />
           <line x1="400" y1="180" x2="100" y2="330" stroke="#64748b" strokeWidth="1" />
           <line x1="400" y1="180" x2="700" y2="340" stroke="#64748b" strokeWidth="1" />
-          <circle cx="400" cy="180" r="4" fill="#4f46e5" />
-          <circle cx="120" cy="60" r="3" fill="#4f46e5" />
-          <circle cx="680" cy="60" r="3" fill="#4f46e5" />
+          <circle cx="400" cy="180" r="4" fill="#0891b2" />
+          <circle cx="120" cy="60" r="3" fill="#0891b2" />
+          <circle cx="680" cy="60" r="3" fill="#0891b2" />
           <circle cx="100" cy="330" r="3" fill="#64748b" />
           <circle cx="700" cy="340" r="3" fill="#64748b" />
         </svg>
 
         <div className="max-w-4xl mx-auto text-center relative">
-          <div className="inline-flex items-center gap-2 bg-indigo-50 rounded-full px-4 py-2 mb-8 text-sm text-indigo-700">
+          <div className="inline-flex items-center gap-2 bg-cyan-50 rounded-full px-4 py-2 mb-8 text-sm text-cyan-700 font-medium ring-1 ring-cyan-100">
             <GraduationCap size={15} />
             Your campus, all in one place
           </div>
-          <h1 className="text-5xl sm:text-6xl font-bold mb-6 leading-tight">
-            The Official <span className="text-indigo-600">Campus Hub</span>
+          <h1 className="text-5xl sm:text-6xl font-bold mb-6 leading-tight tracking-tight">
+            The Official <span className="bg-gradient-to-r from-cyan-600 to-cyan-500 bg-clip-text text-transparent">Campus Hub</span>
           </h1>
           <p className="text-lg text-slate-500 mb-10 max-w-2xl mx-auto leading-relaxed">
             Stay connected with official university announcements, discover student events,
             buy & sell, and hire fellow students — all in one platform.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
             {user ? (
               <Link href="/announcements" className={buttonVariants({ variant: "primary", size: "lg" })}>
                 Browse Announcements <ArrowRight size={18} />
@@ -94,6 +124,15 @@ export default function HomePage() {
               </>
             )}
           </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+            {trustPoints.map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-2 text-sm text-slate-500">
+                <Icon size={16} className="text-cyan-500" />
+                {label}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -102,15 +141,18 @@ export default function HomePage() {
         <section className="max-w-6xl mx-auto px-4 -mt-16 pb-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-40">
             {features.map(({ icon: Icon, color, iconColor, title, desc, href }) => (
-              <Link key={href} href={href} className="card-hover block">
-                <Card className="h-full">
-                  <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center mb-4`}>
+              <Link key={href} href={href} className="card-hover block group">
+                <Card elevated className="h-full">
+                  <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center mb-4 shadow-sm`}>
                     <Icon size={22} className={iconColor} />
                   </div>
                   <h3 className="font-semibold text-slate-900 mb-2">
                     {title}
                   </h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
+                  <p className="text-sm text-slate-500 leading-relaxed mb-4">{desc}</p>
+                  <div className="flex items-center gap-1 text-sm font-medium text-cyan-600 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                    Explore <ArrowRight size={14} />
+                  </div>
                 </Card>
               </Link>
             ))}
@@ -120,8 +162,8 @@ export default function HomePage() {
         /* Logged-out: preview of what's inside, without linking into gated pages */
         <section className="max-w-6xl mx-auto px-4 -mt-16 pb-20">
           <Card padding="lg" className="shadow-lg mt-40">
-            <div className="flex items-center gap-2 text-indigo-600 mb-3">
-              <Sparkles size={16} className="text-indigo-600" />
+            <div className="flex items-center gap-2 text-cyan-600 mb-3">
+              <Sparkles size={16} className="text-cyan-600" />
               <span className="text-xs font-semibold uppercase tracking-[0.15em]">What&apos;s waiting inside</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -148,6 +190,39 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Built for the whole campus */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">Built for the whole campus</h2>
+            <p className="text-slate-500 max-w-xl mx-auto">
+              Whether you&apos;re here to browse and connect, or to post something official — UniEvents is designed around you.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {audiences.map(({ icon: Icon, title, desc, points }) => (
+              <Card key={title} padding="lg" hover className="h-full">
+                <div className="w-12 h-12 rounded-xl bg-cyan-600 shadow-sm shadow-cyan-600/20 flex items-center justify-center mb-5">
+                  <Icon size={22} className="text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">{title}</h3>
+                <p className="text-sm text-slate-500 mb-5 leading-relaxed">{desc}</p>
+                <ul className="space-y-2.5">
+                  {points.map((point) => (
+                    <li key={point} className="flex items-start gap-2.5 text-sm text-slate-600">
+                      <span className="w-4 h-4 rounded-full bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0 mt-0.5">
+                        <Check size={11} strokeWidth={3} />
+                      </span>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="bg-slate-50 py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -161,7 +236,7 @@ export default function HomePage() {
               { step: "03", title: "Moderated for quality", desc: "Student posts go through quick moderation to keep the platform safe and relevant." },
             ].map(({ step, title, desc }) => (
               <div key={step} className="text-center">
-                <div className="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                <div className="w-14 h-14 bg-cyan-600 text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-4 shadow-md shadow-cyan-600/20">
                   {step}
                 </div>
                 <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
@@ -171,6 +246,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }

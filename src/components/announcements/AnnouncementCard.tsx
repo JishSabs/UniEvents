@@ -28,7 +28,7 @@ interface AnnouncementCardProps {
 
 const CATEGORY_COLORS: Record<string, string> = {
   academic: "bg-blue-100 text-blue-700",
-  event: "bg-indigo-100 text-indigo-700",
+  event: "bg-teal-100 text-teal-700",
   sports: "bg-emerald-100 text-emerald-700",
   emergency: "bg-red-100 text-red-700",
   gig: "bg-orange-100 text-orange-700",
@@ -69,8 +69,8 @@ export default function AnnouncementCard({
       )}
 
       {isOfficial && (
-        <div className="absolute -top-3 -left-3 z-10 w-9 h-9 rounded-full bg-indigo-600 ring-2 ring-indigo-200 shadow-md flex items-center justify-center">
-          <ShieldCheck size={16} className="text-white" />
+        <div className="absolute -top-3.5 -left-3.5 z-10 w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-700 ring-[3px] ring-white shadow-[0_2px_10px_rgba(8,145,178,0.45)] flex items-center justify-center badge-official">
+          <ShieldCheck size={18} className="text-white" strokeWidth={2.5} />
         </div>
       )}
 
@@ -78,21 +78,24 @@ export default function AnnouncementCard({
         className={cn(
           "bg-white rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5",
           isOfficial
-            ? "border-indigo-200/70 shadow-sm hover:shadow-md"
+            ? "border-cyan-200/70 shadow-[0_2px_12px_rgba(8,145,178,0.08)] hover:shadow-[0_8px_28px_rgba(8,145,178,0.16)]"
             : "border-slate-200 shadow-sm hover:shadow-md"
         )}
       >
         <div
           className={cn(
             "px-4 py-2.5 flex items-center justify-between",
-            isOfficial ? "bg-indigo-600 pl-9" : "bg-slate-700"
+            isOfficial ? "bg-gradient-to-r from-cyan-600 to-cyan-700 pl-9" : "bg-slate-700"
           )}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {isOfficial ? (
-              <span className="text-[10px] font-bold text-white uppercase tracking-[0.12em]">
-                Official University
-              </span>
+              <>
+                <ShieldCheck size={12} className="text-white/90" />
+                <span className="text-[10px] font-bold text-white uppercase tracking-[0.12em]">
+                  Official University
+                </span>
+              </>
             ) : (
               <>
                 <GraduationCap size={13} className="text-slate-300" />
@@ -156,13 +159,13 @@ export default function AnnouncementCard({
             <div className="flex flex-wrap gap-3 mb-4">
               {announcement.eventDate && (
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded-md">
-                  <Calendar size={12} className="text-indigo-600" />
+                  <Calendar size={12} className="text-cyan-600" />
                   {formatDate(announcement.eventDate)}
                 </div>
               )}
               {announcement.eventLocation && (
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded-md">
-                  <MapPin size={12} className="text-indigo-600" />
+                  <MapPin size={12} className="text-cyan-600" />
                   {announcement.eventLocation}
                 </div>
               )}
@@ -186,7 +189,7 @@ export default function AnnouncementCard({
                     <>
                       <button
                         onClick={() => onApprove?.(announcement.id)}
-                        className="p-1.5 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors"
+                        className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
                         title="Approve"
                       >
                         <CheckCircle size={15} />

@@ -191,7 +191,7 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
           {/* Type */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Listing Type</label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2">
               {LISTING_TYPES.map((t) => (
                 <button
                   key={t.value}
@@ -200,7 +200,7 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
                   className={cn(
                     "py-2 px-3 rounded-xl border-2 text-xs font-medium transition-all",
                     form.type === t.value
-                      ? "border-indigo-600 bg-indigo-600 text-white"
+                      ? "border-cyan-600 bg-cyan-600 text-white"
                       : "border-slate-200 text-slate-500 hover:border-slate-300"
                   )}
                 >
@@ -231,7 +231,7 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
               ))}
 
               {imageFiles.length < MAX_IMAGES && (
-                <label className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-indigo-400 hover:text-indigo-500 cursor-pointer transition-colors">
+                <label className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-cyan-400 hover:text-cyan-500 cursor-pointer transition-colors">
                   <ImagePlus size={18} />
                   <span className="text-[10px] font-medium">Add</span>
                   <input
@@ -288,7 +288,7 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
           </div>
 
           {/* Price */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="col-span-1">
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Price Type</label>
               <Select
@@ -331,7 +331,7 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
           </div>
 
           {/* Location & Tags */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
               <Input

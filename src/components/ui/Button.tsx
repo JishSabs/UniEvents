@@ -5,10 +5,11 @@ export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "bg-indigo-600 text-white hover:bg-indigo-700 disabled:hover:bg-indigo-600",
-  secondary: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50",
-  ghost: "text-slate-600 hover:bg-slate-100",
-  danger: "bg-red-600 text-white hover:bg-red-700",
+  primary:
+    "bg-gradient-to-b from-cyan-500 to-cyan-600 text-white shadow-sm shadow-cyan-600/20 hover:from-cyan-600 hover:to-cyan-700 hover:shadow-md hover:shadow-cyan-600/25 hover:-translate-y-px active:translate-y-0 active:scale-[0.98] disabled:hover:translate-y-0",
+  secondary: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98]",
+  ghost: "text-slate-600 hover:bg-slate-100 active:scale-[0.98]",
+  danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm shadow-red-600/20 active:scale-[0.98]",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -27,7 +28,7 @@ export function buttonVariants({
   className?: string;
 } = {}) {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed",
+    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed",
     variantClasses[variant],
     sizeClasses[size],
     className

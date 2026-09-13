@@ -72,7 +72,7 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
                 <Input
@@ -134,7 +134,7 @@ export default function RegisterPage() {
 
             <p className="text-center text-sm text-slate-500">
               Already have an account?{" "}
-              <Link href="/auth/login" className="text-indigo-600 font-medium hover:underline">
+              <Link href="/auth/login" className="text-cyan-600 font-medium hover:underline">
                 Sign in
               </Link>
             </p>
