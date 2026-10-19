@@ -148,25 +148,35 @@ export default function CreateListingModal({ onClose, onCreated }: CreateListing
         setUploadingImages(false);
       }
 
-      await createListing({
-        type: form.type as never,
-        title: form.title.trim(),
-        description: form.description.trim(),
-        price: form.price ? parseFloat(form.price) : undefined,
-        priceType: form.priceType as never,
-        currency: form.currency,
-        imageURLs,
-        category: form.category,
-        tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
-        location: form.location || undefined,
-        authorId: profile.uid,
-        authorName: profile.displayName,
-        contactInfo: {
-          whatsapp: form.whatsapp || undefined,
-          email: form.email || undefined,
-          phone: form.phone || undefined,
-        },
-      });
+      
+await createListing({
+  type: form.type as never,
+  title: form.title.trim(),
+  description: form.description.trim(),
+  ...(form.price ? { price: parseFloat(form.price) } : {}),
+  priceType: form.priceType as never,
+  currency: form.currency,
+  imageURLs,
+  category: form.category,
+  tags: form.tags
+    ? form.tags.split(",").map((t) => t.trim()).filter(Boolean)
+    : [],
+  ...(form.location.trim() ? { location: form.location.trim() } : {}),
+  authorId: profile.uid,
+  authorName: profile.displayName,
+  contactInfo: {
+    ...(form.whatsapp.trim()
+      ? { whatsapp: form.whatsapp.trim() }
+      : {}),
+    ...(form.email.trim()
+      ? { email: form.email.trim() }
+      : {}),
+    ...(form.phone.trim()
+      ? { phone: form.phone.trim() }
+      : {}),
+  },
+});
+
 
       toast.success("Listing posted successfully!");
       onCreated();
