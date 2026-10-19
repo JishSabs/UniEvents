@@ -1,5 +1,5 @@
 "use client";
-
+import ReportButton from "@/components/ReportButton";
 import { auth } from "@/lib/firebase";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -204,14 +204,24 @@ export default function ListingCard({
         </div>
 
         {!isOwner && currentUserId && (
-          <button
-            onClick={handleStartTransaction}
-            disabled={starting}
-            className="w-full flex items-center justify-center gap-1 py-1.5 sm:py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg text-[10px] sm:text-xs font-semibold shadow-sm shadow-cyan-600/20 hover:from-cyan-600 hover:to-cyan-700 active:scale-[0.98] transition-all disabled:opacity-60"
-          >
-            <Navigation size={11} />
-            {starting ? "Starting…" : "Start Transaction"}
-          </button>
+          <>
+            <button
+              onClick={handleStartTransaction}
+              disabled={starting}
+              className="w-full flex items-center justify-center gap-1 py-1.5 sm:py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg text-[10px] sm:text-xs font-semibold shadow-sm shadow-cyan-600/20 hover:from-cyan-600 hover:to-cyan-700 active:scale-[0.98] transition-all disabled:opacity-60"
+            >
+              <Navigation size={11} />
+              {starting ? "Starting…" : "Start Transaction"}
+            </button>
+
+            <div className="flex justify-center mt-1.5">
+              <ReportButton
+                itemType="listing"
+                itemId={listing.id}
+                reportedUserId={listing.authorId}
+              />
+            </div>
+          </>
         )}
       </div>
     </div>

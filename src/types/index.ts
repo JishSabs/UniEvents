@@ -1,7 +1,52 @@
 import { Timestamp } from "firebase/firestore";
 
 // ─── User & Roles ────────────────────────────────────────────────────────────
+/**
+ * ADD THESE to src/types/index.ts
+ * (append near your existing Notification section — same style as your other types)
+ */
 
+// ─── Reports ─────────────────────────────────────────────────────────────
+export type ReportReason =
+  | "scam_or_fraud"
+  | "inappropriate_content"
+  | "fake_listing"
+  | "harassment"
+  | "other";
+
+export type ReportStatus = "pending" | "resolved" | "dismissed";
+
+export type ReportedItemType = "listing" | "announcement" | "user";
+
+export interface Report {
+  id: string;
+  reporterId: string; // uid of the student who filed the report
+  itemType: ReportedItemType;
+  itemId: string; // id of the listing / announcement / user being reported
+  reportedUserId: string; // uid of the person being reported (the listing/announcement author)
+  reason: ReportReason;
+  details?: string; // optional free-text explanation from the reporter
+  status: ReportStatus;
+  createdAt: unknown; // Firestore Timestamp
+  resolvedAt?: unknown;
+  resolvedBy?: string; // admin uid who actioned it
+}
+
+// ─── Ratings ─────────────────────────────────────────────────────────────
+export interface Rating {
+  id: string;
+  transactionId: string; // the transaction this rating belongs to
+  raterId: string; // uid of the person giving the rating
+  ratedUserId: string; // uid of the person being rated
+  stars: number; // 1-5
+  comment?: string;
+  createdAt: unknown;
+}
+
+export interface RatingSummary {
+  averageStars: number;
+  totalRatings: number;
+}
 export type UserRole = "student" | "moderator" | "admin";
 
 export interface UserProfile {

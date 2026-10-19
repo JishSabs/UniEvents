@@ -99,3 +99,43 @@ service cloud.firestore {
     }
   }
 }
+
+ADD THESE RULES to your firestore.rules file, inside the existing `match /databases/{database}/documents { ... }` block.
+
+I could not read your current firestore.rules content directly (same binary/encoding issue as marketplace.ts), so please paste these in manually and adjust `isAdmin()` / `isSignedIn()` to match whatever helper functions your existing rules already define (based on your AuthContext, you're using a `role` field on the user's Firestore profile — reuse that same check here for consistency).
+
+-----------------------------------------------------------
+
+// Reports: students can create; only admins can read/update
+match /reports/{reportId} {
+  allow create: if isSignedIn() &&
+                   request.resource.data.reporterId == request.auth.uid;
+  allow read, update: if isAdmin();
+  allow delete: if false; // keep an audit trail — never hard-delete reports
+}
+
+// Ratings: only the two participants of a transaction can rate each other;
+// anyone signed in can read ratings (so ratings can display on profiles/listings)
+match /ratings/{ratingId} {
+  allow create: if isSignedIn() &&
+                   request.resource.data.raterId == request.auth.uid;
+  allow read: if isSignedIn();
+  allow update, delete: if false; // ratings are immutable once submitted
+}
+
+-----------------------------------------------------------
+
+If you don't already have isSignedIn()/isAdmin() helper functions defined at
+the top of firestore.rules, add something like:
+
+function isSignedIn() {
+  return request.auth != null;
+}
+
+function isAdmin() {
+  return isSignedIn() &&
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+}
+
+(This matches the role-based check your AuthContext already implies with
+isAdmin / isModerator.)
