@@ -45,7 +45,7 @@ export async function createListing(
 ): Promise<string> {
   const docRef = await addDoc(collection(db, COL), {
     ...data,
-    status: "pending" as ListingStatus,
+    status: "active" as ListingStatus,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

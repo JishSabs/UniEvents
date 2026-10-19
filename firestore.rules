@@ -60,13 +60,25 @@ service cloud.firestore {
 
     // ─── Marketplace ─────────────────────────────────────────
     match /marketplace/{listingId} {
-      // Anyone can read active listings
-      allow read: if resource.data.status == 'active' || isOwner(resource.data.authorId) || isModerator();
-      // Active users can create listings
-      allow create: if isActiveUser();
-      // Authors can update/delete their own listings; admins can do anything
-      allow update: if isOwner(resource.data.authorId) || isAdmin();
-      allow delete: if isOwner(resource.data.authorId) || isAdmin();
+  // Active listings are public; owners and moderators can see their listings
+  allow read: if resource.data.status == 'active'
+              || isOwner(resource.data.authorId)
+              || isModerator();
+
+  // Active users can create listings
+  allow create: if isActiveUser();
+
+  // Owners can update their own listings; moderators can update any
+  allow update: if isOwner(resource.data.authorId)
+                || isModerator();
+
+  // Owners can delete their own listings; moderators can delete any
+  allow delete: if isOwner(resource.data.authorId)
+                || isModerator();
+}
+
+// Authors can delete their own listings; admins and moderators can delete any
+allow delete: if isOwner(resource.data.authorId) || isModerator();
     }
 
     // ─── Notifications ────────────────────────────────────────

@@ -18,7 +18,12 @@ import {
 } from "@/lib/users";
 import { setStudentVerification } from "@/lib/studentVerification";
 import { getActiveListingCount } from "@/lib/marketplace";
-import { Announcement, UserRole } from "@/types";
+import {
+  getPendingReports,
+  resolveReport,
+  dismissReport,
+} from "@/lib/reports";
+import { Announcement, UserRole, Report } from "@/types";
 import AnnouncementCard from "@/components/announcements/AnnouncementCard";
 import { cn, timeAgo } from "@/lib/utils";
 import {
@@ -32,6 +37,9 @@ import {
   ToggleLeft,
   ToggleRight,
   ShoppingBag,
+  Flag,
+  CheckCheck,
+  XCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Card from "@/components/ui/Card";
@@ -39,7 +47,7 @@ import Badge from "@/components/ui/Badge";
 import Spinner from "@/components/ui/Spinner";
 import EmptyState from "@/components/ui/EmptyState";
 
-type Tab = "overview" | "pending" | "users";
+type Tab = "overview" | "pending" | "users" | "reports";
 
 export default function AdminPage() {
   const { profile, isModerator, isAdmin } = useAuth();
@@ -54,6 +62,9 @@ export default function AdminPage() {
     useState<number>(0);
   const [loadingPending, setLoadingPending] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [reports, setReports] = useState<Report[]>([]);
+const [loadingReports, setLoadingReports] = useState(false);
+const [processingReportId, setProcessingReportId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadOverview = async () => {
@@ -87,10 +98,10 @@ export default function AdminPage() {
   }, [isAdmin]);
 
   useEffect(() => {
-    if (tab === "pending") void loadPending();
-    if (tab === "users" && isAdmin) void loadUsers();
-  }, [tab, isAdmin]);
-
+  if (tab === "pending") void loadPending();
+  if (tab === "users" && isAdmin) void loadUsers();
+  if (tab === "reports") void loadReports();
+}, [tab, isAdmin]);
   const loadPending = async () => {
     setLoadingPending(true);
 
@@ -112,6 +123,66 @@ export default function AdminPage() {
       setLoadingUsers(false);
     }
   };
+
+  
+const loadReports = async () => {
+  setLoadingReports(true);
+
+  try {
+    const result = await getPendingReports();
+    setReports(result);
+  } catch (error) {
+    console.error("Failed to load reports:", error);
+    toast.error("Could not load reports. Check Firestore permissions.");
+  } finally {
+    setLoadingReports(false);
+  }
+};
+
+const handleResolveReport = async (report: Report) => {
+  if (!profile?.uid) {
+    toast.error("Could not identify the admin account.");
+    return;
+  }
+
+  setProcessingReportId(report.id);
+
+  try {
+    await resolveReport(report.id, profile.uid);
+    setReports((current) =>
+      current.filter((item) => item.id !== report.id)
+    );
+    toast.success("Report marked as resolved.");
+  } catch (error) {
+    console.error("Failed to resolve report:", error);
+    toast.error("Could not resolve the report.");
+  } finally {
+    setProcessingReportId(null);
+  }
+};
+
+const handleDismissReport = async (report: Report) => {
+  if (!profile?.uid) {
+    toast.error("Could not identify the admin account.");
+    return;
+  }
+
+  setProcessingReportId(report.id);
+
+  try {
+    await dismissReport(report.id, profile.uid);
+    setReports((current) =>
+      current.filter((item) => item.id !== report.id)
+    );
+    toast.success("Report dismissed.");
+  } catch (error) {
+    console.error("Failed to dismiss report:", error);
+    toast.error("Could not dismiss the report.");
+  } finally {
+    setProcessingReportId(null);
+  }
+};
+
 
   const handleApprove = async (id: string) => {
     try {
@@ -220,23 +291,30 @@ export default function AdminPage() {
 
   if (!isModerator) return null;
 
-  const TABS = [
-    { id: "overview", label: "Overview", icon: LayoutDashboard },
-    {
-      id: "pending",
-      label: "Pending Posts",
-      icon: Clock,
-      badge: pendingCount || undefined,
-    },
-    ...(isAdmin
-      ? [{ id: "users", label: "User Management", icon: Users }]
-      : []),
-  ] as {
-    id: Tab;
-    label: string;
-    icon: typeof LayoutDashboard;
-    badge?: number;
-  }[];
+  
+const TABS = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  {
+    id: "pending",
+    label: "Pending Posts",
+    icon: Clock,
+    badge: pendingCount || undefined,
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    icon: Flag,
+  },
+  ...(isAdmin
+    ? [{ id: "users", label: "User Management", icon: Users }]
+    : []),
+] as {
+  id: Tab;
+  label: string;
+  icon: typeof LayoutDashboard;
+  badge?: number;
+}[];
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -415,6 +493,116 @@ export default function AdminPage() {
           )}
         </div>
       )}
+
+
+      {/* User reports */}
+      {tab === "reports" && (
+        <section className="space-y-5">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">
+              Fraud & User Reports
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Review reports submitted by students.
+            </p>
+          </div>
+
+          {loadingReports ? (
+            <div className="flex justify-center py-20">
+              <Spinner size={32} />
+            </div>
+          ) : reports.length === 0 ? (
+            <EmptyState
+              icon={CheckCircle}
+              title="No pending reports"
+              description="There are currently no reports waiting for review."
+            />
+          ) : (
+            <div className="space-y-4">
+              {reports.map((report) => (
+                <div
+                  key={report.id}
+                  className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold capitalize text-slate-900">
+                        {report.reason.replace(/_/g, " ")}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Reported {report.itemType}
+                      </p>
+                    </div>
+
+                    <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                      Pending
+                    </span>
+                  </div>
+
+                  <div className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
+                    <div>
+                      <p className="font-medium text-slate-500">Reporter ID</p>
+                      <p className="mt-1 break-all text-slate-800">
+                        {report.reporterId}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="font-medium text-slate-500">Reported user ID</p>
+                      <p className="mt-1 break-all text-slate-800">
+                        {report.reportedUserId || "Not provided"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="font-medium text-slate-500">Reported item ID</p>
+                      <p className="mt-1 break-all text-slate-800">
+                        {report.itemId || "Not provided"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {report.details && (
+                    <div className="mt-4 rounded-xl bg-slate-50 p-4">
+                      <p className="text-sm font-semibold text-slate-700">
+                        Additional details
+                      </p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">
+                        {report.details}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      disabled={processingReportId === report.id}
+                      onClick={() => void handleResolveReport(report)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      <CheckCheck size={16} />
+                      {processingReportId === report.id
+                        ? "Processing..."
+                        : "Resolve"}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={processingReportId === report.id}
+                      onClick={() => void handleDismissReport(report)}
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      <XCircle size={16} />
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
 
       {/* User management (admin only) */}
       {tab === "users" && isAdmin && (
