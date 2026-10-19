@@ -1,52 +1,8 @@
 import { Timestamp } from "firebase/firestore";
 
+
 // ─── User & Roles ────────────────────────────────────────────────────────────
-/**
- * ADD THESE to src/types/index.ts
- * (append near your existing Notification section — same style as your other types)
- */
 
-// ─── Reports ─────────────────────────────────────────────────────────────
-export type ReportReason =
-  | "scam_or_fraud"
-  | "inappropriate_content"
-  | "fake_listing"
-  | "harassment"
-  | "other";
-
-export type ReportStatus = "pending" | "resolved" | "dismissed";
-
-export type ReportedItemType = "listing" | "announcement" | "user";
-
-export interface Report {
-  id: string;
-  reporterId: string; // uid of the student who filed the report
-  itemType: ReportedItemType;
-  itemId: string; // id of the listing / announcement / user being reported
-  reportedUserId: string; // uid of the person being reported (the listing/announcement author)
-  reason: ReportReason;
-  details?: string; // optional free-text explanation from the reporter
-  status: ReportStatus;
-  createdAt: unknown; // Firestore Timestamp
-  resolvedAt?: unknown;
-  resolvedBy?: string; // admin uid who actioned it
-}
-
-// ─── Ratings ─────────────────────────────────────────────────────────────
-export interface Rating {
-  id: string;
-  transactionId: string; // the transaction this rating belongs to
-  raterId: string; // uid of the person giving the rating
-  ratedUserId: string; // uid of the person being rated
-  stars: number; // 1-5
-  comment?: string;
-  createdAt: unknown;
-}
-
-export interface RatingSummary {
-  averageStars: number;
-  totalRatings: number;
-}
 export type UserRole = "student" | "moderator" | "admin";
 
 export interface UserProfile {
@@ -65,6 +21,7 @@ export interface UserProfile {
 // ─── Announcements ───────────────────────────────────────────────────────────
 
 export type AnnouncementSource = "official" | "student";
+
 export type AnnouncementCategory =
   | "academic"
   | "event"
@@ -75,13 +32,14 @@ export type AnnouncementCategory =
   | "party"
   | "club"
   | "other";
+
 export type PostStatus = "pending" | "approved" | "rejected" | "deleted";
 
 export interface Announcement {
   id: string;
   title: string;
   content: string;
-  source: AnnouncementSource;       // official = school, student = student-posted
+  source: AnnouncementSource;
   category: AnnouncementCategory;
   status: PostStatus;
   authorId: string;
@@ -95,11 +53,12 @@ export interface Announcement {
   viewCount: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  approvedBy?: string;              // uid of moderator/admin who approved
+  approvedBy?: string;
   rejectionReason?: string;
-  eventDate?: Timestamp;            // for event announcements
+  eventDate?: Timestamp;
   eventLocation?: string;
 }
+
 // ─── Marketplace ─────────────────────────────────────────────────────────────
 
 export type ListingType = "product" | "service" | "job" | "gig";
@@ -113,7 +72,7 @@ export interface MarketplaceListing {
   description: string;
   price?: number;
   priceType: PriceType;
-  currency: string;                 // e.g., "USD", "ZWL"
+  currency: string;
   imageURLs: string[];
   category: string;
   tags?: string[];
@@ -125,7 +84,7 @@ export interface MarketplaceListing {
     email?: string;
     phone?: string;
   };
-  location?: string;               // on-campus location or delivery info
+  location?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
   expiresAt?: Timestamp;
@@ -139,7 +98,8 @@ export type NotificationType =
   | "listing_approved"
   | "new_announcement"
   | "role_changed"
-  | "post_deleted";
+  | "post_deleted"
+  | "event_reminder";
 
 export interface Notification {
   id: string;
@@ -148,7 +108,7 @@ export interface Notification {
   title: string;
   message: string;
   isRead: boolean;
-  relatedId?: string;              // id of related announcement/listing
+  relatedId?: string;
   createdAt: Timestamp;
 }
 
@@ -159,7 +119,7 @@ export interface SelectOption {
   label: string;
 }
 
-// ─── Live Transactions ────────────────────────────────────────────────────────
+// ─── Live Transactions ───────────────────────────────────────────────────────
 
 export type TransactionStatus = "active" | "ended";
 
@@ -186,7 +146,7 @@ export interface Transaction {
   updatedAt: Timestamp;
 }
 
-// optional fields used for inbox/chat previews
+// Optional fields used for inbox/chat previews
 export interface TransactionPreview extends Transaction {
   lastMessage?: string;
   lastMessageAt?: Timestamp;
@@ -201,4 +161,53 @@ export interface Message {
   senderName: string;
   text: string;
   createdAt: Timestamp;
+}
+
+// Report system types
+export type ReportReason =
+  | "scam_or_fraud"
+  | "inappropriate_content"
+  | "fake_listing"
+  | "harassment"
+  | "other";
+
+export type ReportedItemType =
+  | "listing"
+  | "user"
+  | "message";
+
+export type ReportStatus =
+  | "pending"
+  | "resolved"
+  | "dismissed";
+
+export interface Report {
+  id: string;
+  reporterId: string;
+  itemType: ReportedItemType;
+  itemId: string;
+  reportedUserId: string;
+  reason: ReportReason;
+  details?: string;
+  status: ReportStatus;
+  createdAt?: unknown;
+  resolvedAt?: unknown;
+  resolvedBy?: string;
+}
+
+
+// User rating types
+export interface Rating {
+  id: string;
+  transactionId: string;
+  raterId: string;
+  ratedUserId: string;
+  stars: number;
+  comment?: string;
+  createdAt?: unknown;
+}
+
+export interface RatingSummary {
+  averageStars: number;
+  totalRatings: number;
 }

@@ -70,12 +70,45 @@ service cloud.firestore {
     }
 
     // ─── Notifications ────────────────────────────────────────
-    match /notifications/{notificationId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isModerator();
-      allow update: if isOwner(resource.data.userId);
-      allow delete: if isOwner(resource.data.userId);
-    }
+   // ─── Notifications ─────────────────────────────────────────
+match /notifications/{notificationId} {
+  // Users can read only their own notifications
+  allow read: if isOwner(resource.data.userId);
+
+  // Moderators can create notices for users.
+  // A signed-in user can create only their own event reminder notice.
+  allow create: if isModerator()
+                || (isActiveUser()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.type == 'event_reminder');
+
+  // Users can only mark their own notification as read
+  allow update: if isOwner(resource.data.userId)
+                && request.resource.data.userId == resource.data.userId
+                && request.resource.data.diff(resource.data)
+                   .affectedKeys().hasOnly(['isRead']);
+
+  allow delete: if isOwner(resource.data.userId);
+}
+
+// ─── Event reminders ────────────────────────────────────────
+match /eventReminders/{reminderId} {
+  // A user can create only their own reminder for an event announcement
+  allow create: if isActiveUser()
+                && request.resource.data.userId == request.auth.uid
+                && request.resource.data.announcementId is string
+                && request.resource.data.eventDate is timestamp;
+
+  // Users can manage only their own reminders
+  allow read: if isOwner(resource.data.userId);
+
+  allow update: if isOwner(resource.data.userId)
+                && request.resource.data.userId == resource.data.userId
+                && request.resource.data.announcementId
+                   == resource.data.announcementId;
+
+  allow delete: if isOwner(resource.data.userId);
+}
 
     match /transactions/{transactionId} {
       allow create: if request.auth != null && request.auth.uid == request.resource.data.buyerId;

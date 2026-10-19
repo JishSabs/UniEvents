@@ -28,6 +28,7 @@ import {
 import { auth, db } from "@/lib/firebase";
 import { setMyPresence, clearMyPresence } from "@/lib/presence";
 import { UserProfile, UserRole } from "@/types";
+import { ensureStudentVerificationRecord } from "@/lib/studentVerification";
 
 // Local-only escape hatch for viewing pages without a real Firebase backend.
 // Set NEXT_PUBLIC_PREVIEW_MODE=true in .env.local (never commit it) to sign
@@ -272,7 +273,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     await setDoc(doc(db, "users", cred.user.uid), newProfile);
-    setProfile(newProfile as UserProfile);
+await ensureStudentVerificationRecord(cred.user.uid);
+setProfile(newProfile as UserProfile);
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());

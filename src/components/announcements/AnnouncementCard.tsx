@@ -1,6 +1,8 @@
 "use client";
 
-import { Announcement } from "@/types";
+import { useEffect, useState } from "react";
+import type { Announcement } from "@/types";
+import StudentVerificationBadge from "@/components/ui/StudentVerificationBadge";
 import { cn, timeAgo, formatDate } from "@/lib/utils";
 import {
   Pin,
@@ -14,8 +16,16 @@ import {
   GraduationCap,
   FileText,
   ExternalLink,
+  Bell,
 } from "lucide-react";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
+import {
+  removeEventReminder,
+  setEventReminder,
+  subscribeToEventReminder,
+} from "@/lib/notifications";
+import toast from "react-hot-toast";
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -40,9 +50,12 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 function tiltFor(id: string) {
   let hash = 0;
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) % 1000;
-  const deg = (hash % 3) - 1;
-  return deg;
+
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) % 1000;
+  }
+
+  return (hash % 3) - 1;
 }
 
 export default function AnnouncementCard({
@@ -53,13 +66,74 @@ export default function AnnouncementCard({
   onDelete,
   onPin,
 }: AnnouncementCardProps) {
+  const { user } = useAuth();
+  const [reminderSet, setReminderSet] = useState(false);
+  const [reminderBusy, setReminderBusy] = useState(false);
+
   const isOfficial = announcement.source === "official";
   const tilt = announcement.isPinned ? tiltFor(announcement.id) : 0;
+
+  useEffect(() => {
+    if (
+      !user?.uid ||
+      !announcement.eventDate ||
+      announcement.status !== "approved"
+    ) {
+      setReminderSet(false);
+      return;
+    }
+
+    return subscribeToEventReminder(
+      user.uid,
+      announcement.id,
+      setReminderSet
+    );
+  }, [
+    user?.uid,
+    announcement.id,
+    announcement.eventDate,
+    announcement.status,
+  ]);
+
+  const handleReminderClick = async () => {
+    if (!user?.uid || !announcement.eventDate) return;
+
+    setReminderBusy(true);
+
+    try {
+      if (reminderSet) {
+        await removeEventReminder(user.uid, announcement.id);
+        toast.success("Event reminders removed.");
+      } else {
+        await setEventReminder(
+          user.uid,
+          announcement.id,
+          announcement.title,
+          announcement.eventDate
+        );
+        toast.success(
+          "Reminders set for 24 hours and 1 hour before the event."
+        );
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not update the reminder."
+      );
+    } finally {
+      setReminderBusy(false);
+    }
+  };
 
   return (
     <div
       className="relative"
-      style={announcement.isPinned ? { transform: `rotate(${tilt}deg)` } : undefined}
+      style={
+        announcement.isPinned
+          ? { transform: `rotate(${tilt}deg)` }
+          : undefined
+      }
     >
       {announcement.isPinned && (
         <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
@@ -70,7 +144,11 @@ export default function AnnouncementCard({
 
       {isOfficial && (
         <div className="absolute -top-3.5 -left-3.5 z-10 w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-700 ring-[3px] ring-white shadow-[0_2px_10px_rgba(8,145,178,0.45)] flex items-center justify-center badge-official">
-          <ShieldCheck size={18} className="text-white" strokeWidth={2.5} />
+          <ShieldCheck
+            size={18}
+            className="text-white"
+            strokeWidth={2.5}
+          />
         </div>
       )}
 
@@ -85,7 +163,9 @@ export default function AnnouncementCard({
         <div
           className={cn(
             "px-4 py-2.5 flex items-center justify-between",
-            isOfficial ? "bg-gradient-to-r from-cyan-600 to-cyan-700 pl-9" : "bg-slate-700"
+            isOfficial
+              ? "bg-gradient-to-r from-cyan-600 to-cyan-700 pl-9"
+              : "bg-slate-700"
           )}
         >
           <div className="flex items-center gap-1.5">
@@ -105,10 +185,12 @@ export default function AnnouncementCard({
               </>
             )}
           </div>
+
           <span
             className={cn(
               "text-[10px] px-2 py-0.5 rounded-full font-semibold tracking-wide",
-              CATEGORY_COLORS[announcement.category] ?? CATEGORY_COLORS.other
+              CATEGORY_COLORS[announcement.category] ??
+                CATEGORY_COLORS.other
             )}
           >
             {announcement.category}
@@ -116,36 +198,45 @@ export default function AnnouncementCard({
         </div>
 
         <div className="p-5">
-          {announcement.attachmentType === "image" && announcement.attachmentURL && (
-            <div className="mb-4 rounded-xl overflow-hidden h-48 relative bg-slate-100">
-              <Image
-                src={announcement.attachmentURL}
-                alt={announcement.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
+          {announcement.attachmentType === "image" &&
+            announcement.attachmentURL && (
+              <div className="mb-4 rounded-xl overflow-hidden h-48 relative bg-slate-100">
+                <Image
+                  src={announcement.attachmentURL}
+                  alt={announcement.title}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
 
-          {announcement.attachmentType === "pdf" && announcement.attachmentURL && (
-            
-             <a href={announcement.attachmentURL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mb-4 flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors group"
-            >
-              <div className="w-10 h-12 rounded-md bg-red-500 flex items-center justify-center shrink-0 shadow-sm">
-                <FileText size={18} className="text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-700 truncate">
-                  {announcement.attachmentName || "Document.pdf"}
-                </p>
-                <p className="text-xs text-slate-400">PDF · Tap to view</p>
-              </div>
-              <ExternalLink size={14} className="text-slate-400 group-hover:text-slate-600 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-            </a>
-          )}
+          {announcement.attachmentType === "pdf" &&
+            announcement.attachmentURL && (
+              <a
+                href={announcement.attachmentURL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mb-4 flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors group"
+              >
+                <div className="w-10 h-12 rounded-md bg-red-500 flex items-center justify-center shrink-0 shadow-sm">
+                  <FileText size={18} className="text-white" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-700 truncate">
+                    {announcement.attachmentName || "Document.pdf"}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    PDF · Tap to view
+                  </p>
+                </div>
+
+                <ExternalLink
+                  size={14}
+                  className="text-slate-400 group-hover:text-slate-600 shrink-0 group-hover:translate-x-0.5 transition-transform"
+                />
+              </a>
+            )}
 
           <h3 className="text-lg font-semibold text-slate-900 mb-2 leading-snug">
             {announcement.title}
@@ -156,27 +247,57 @@ export default function AnnouncementCard({
           </p>
 
           {(announcement.eventDate || announcement.eventLocation) && (
-            <div className="flex flex-wrap gap-3 mb-4">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
               {announcement.eventDate && (
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded-md">
                   <Calendar size={12} className="text-cyan-600" />
                   {formatDate(announcement.eventDate)}
                 </div>
               )}
+
               {announcement.eventLocation && (
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded-md">
                   <MapPin size={12} className="text-cyan-600" />
                   {announcement.eventLocation}
                 </div>
               )}
+
+              {user &&
+                announcement.status === "approved" &&
+                announcement.eventDate &&
+                announcement.eventDate.toMillis() > Date.now() && (
+                  <button
+                    type="button"
+                    onClick={() => void handleReminderClick()}
+                    disabled={reminderBusy}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 px-3 py-1.5 text-xs font-medium text-cyan-700 transition-colors hover:bg-cyan-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Bell size={13} />
+                    {reminderBusy
+                      ? "Saving..."
+                      : reminderSet
+                        ? "Cancel event reminders"
+                        : "Remind me"}
+                  </button>
+                )}
             </div>
           )}
 
           <div className="flex items-center justify-between pt-3 border-t border-slate-100">
             <div>
-              <p className="text-xs font-medium text-slate-700">{announcement.authorName}</p>
-              <p className="text-xs text-slate-400">{timeAgo(announcement.createdAt)}</p>
+             <p className="text-xs font-medium text-slate-700">
+  {announcement.authorName}
+</p>
+
+{announcement.authorRole === "student" && (
+  <StudentVerificationBadge userId={announcement.authorId} />
+)}
+
+<p className="text-xs text-slate-400">
+  {timeAgo(announcement.createdAt)}
+</p>
             </div>
+
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1 text-xs text-slate-400">
                 <Eye size={12} />
@@ -188,13 +309,16 @@ export default function AnnouncementCard({
                   {announcement.status === "pending" && (
                     <>
                       <button
+                        type="button"
                         onClick={() => onApprove?.(announcement.id)}
                         className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
                         title="Approve"
                       >
                         <CheckCircle size={15} />
                       </button>
+
                       <button
+                        type="button"
                         onClick={() => onReject?.(announcement.id)}
                         className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
                         title="Reject"
@@ -203,9 +327,13 @@ export default function AnnouncementCard({
                       </button>
                     </>
                   )}
+
                   {onPin && (
                     <button
-                      onClick={() => onPin(announcement.id, !announcement.isPinned)}
+                      type="button"
+                      onClick={() =>
+                        onPin(announcement.id, !announcement.isPinned)
+                      }
                       className={cn(
                         "p-1.5 rounded-lg transition-colors",
                         announcement.isPinned
@@ -217,7 +345,9 @@ export default function AnnouncementCard({
                       <Pin size={15} />
                     </button>
                   )}
+
                   <button
+                    type="button"
                     onClick={() => onDelete?.(announcement.id)}
                     className="p-1.5 rounded-lg bg-red-50 text-red-400 hover:bg-red-100 transition-colors"
                     title="Delete"
@@ -231,13 +361,19 @@ export default function AnnouncementCard({
 
           {announcement.status === "pending" && (
             <div className="mt-3 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
-              <p className="text-xs text-amber-700 font-medium">⏳ Awaiting approval</p>
+              <p className="text-xs text-amber-700 font-medium">
+                ⏳ Awaiting approval
+              </p>
             </div>
           )}
+
           {announcement.status === "rejected" && (
             <div className="mt-3 px-3 py-1.5 rounded-lg bg-red-50 border border-red-200">
               <p className="text-xs text-red-600 font-medium">
-                ✗ Rejected{announcement.rejectionReason ? `: ${announcement.rejectionReason}` : ""}
+                ✗ Rejected
+                {announcement.rejectionReason
+                  ? `: ${announcement.rejectionReason}`
+                  : ""}
               </p>
             </div>
           )}

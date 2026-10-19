@@ -7,6 +7,7 @@ import { startTransaction } from "@/lib/transactions";
 import { Navigation } from "lucide-react";
 import toast from "react-hot-toast";
 import { MarketplaceListing } from "@/types";
+import StudentVerificationBadge from "@/components/ui/StudentVerificationBadge";
 import { cn, timeAgo, formatPrice } from "@/lib/utils";
 import {
   MessageCircle,
@@ -166,7 +167,12 @@ export default function ListingCard({
         </div>
 
         <div className="flex items-center justify-between mb-2 mt-auto pt-1.5 border-t border-slate-50">
-          <p className="text-[10px] sm:text-[11px] text-slate-400 truncate">{listing.authorName}</p>
+         <div className="min-w-0">
+  <p className="text-[10px] sm:text-[11px] text-slate-400 truncate">
+    {listing.authorName}
+  </p>
+  <StudentVerificationBadge userId={listing.authorId} />
+</div>
           <p className="text-[10px] sm:text-[11px] text-slate-300 shrink-0 ml-1">{timeAgo(listing.createdAt)}</p>
         </div>
 
